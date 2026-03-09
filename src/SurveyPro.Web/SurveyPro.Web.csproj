@@ -6,4 +6,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\SurveyPro.Application\SurveyPro.Application.csproj" />
+    <ProjectReference Include="..\SurveyPro.Infrastructure\SurveyPro.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>
