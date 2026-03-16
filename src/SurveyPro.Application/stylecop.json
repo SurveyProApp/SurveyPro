@@ -8,35 +8,23 @@
       "documentPrivateElements": false,
       "documentPrivateFields": false
     },
+    "layoutRules": {
+      "newlineAtEndOfFile": "require",
+      "allowConsecutiveUsings": true
+    },
+    "namingRules": {
+      "allowCommonHungarianPrefixes": false
+    },
     "orderingRules": {
       "elementOrder": [
         "kind",
         "accessibility",
         "constant",
-        "field",
-        "constructor",
-        "property",
-        "method",
-        "event",
-        "delegate",
-        "enum",
-        "interface",
-        "class",
-        "struct"
+        "static",
+        "readonly"
       ],
       "usingDirectivesPlacement": "outsideNamespace",
       "systemUsingDirectivesFirst": true
-    },
-    "namingRules": {
-      "allowCommonHungarianPrefixes": false,
-      "allowCommonBooleanPrefixes": true
-    },
-    "layoutRules": {
-      "newlineAtEndOfFile": "require",
-      "allowConsecutiveUsings": true
-    },
-    "maintainabilityRules": {
-      "maxLineLength": 220
     }
   }
 }

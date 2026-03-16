@@ -1,6 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using SurveyPro.Infrastructure.Persistence;
 using Serilog;
+using SurveyPro.Domain.Entities;
+using Microsoft.AspNetCore.Identity;
+using SurveyPro.Infrastructure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,12 +26,28 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<SurveyProDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services
+    .AddIdentity<ApplicationUser, IdentityRole<Guid>>()
+    .AddEntityFrameworkStores<SurveyProDbContext>()
+    .AddDefaultTokenProviders();
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.AccessDeniedPath = "/Account/AccessDenied";
+});
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
+    var roleManager = 
+        scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+
+    await RoleSeeder.SeedRolesAsync(roleManager);
+
     var db = scope.ServiceProvider.GetRequiredService<SurveyProDbContext>();
-    db.Database.Migrate();
+    await db.Database.MigrateAsync();
 }
 
 // логування HTTP запитів
@@ -44,10 +63,11 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-app.Run();
+await app.RunAsync();
