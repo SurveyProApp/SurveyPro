@@ -45,8 +45,7 @@ public class Program
         builder.Services
             .AddIdentity<ApplicationUser, IdentityRole<Guid>>()
             .AddEntityFrameworkStores<SurveyProDbContext>()
-            .AddDefaultTokenProviders()
-            .AddClaimsPrincipalFactory<ApplicationUserClaimsPrincipalFactory>();
+            .AddDefaultTokenProviders();
 
         builder.Services.ConfigureApplicationCookie(options =>
         {
@@ -88,10 +87,5 @@ public class Program
             pattern: "{controller=Home}/{action=Index}/{id?}");
 
         await app.RunAsync();
-    }
-
-    private static void AddClaimsPrincipalFactory<T>()
-    {
-        throw new NotImplementedException();
     }
 }
