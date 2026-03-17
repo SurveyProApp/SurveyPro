@@ -12,5 +12,9 @@ public class AnswerOption
 
     public Guid QuestionId { get; set; }
 
+    public Question Question { get; set; } = null!;
+
     public string Text { get; set; } = string.Empty;
+
+    public ICollection<ResponseAnswer> ResponseAnswers { get; set; } = new List<ResponseAnswer>();
 }

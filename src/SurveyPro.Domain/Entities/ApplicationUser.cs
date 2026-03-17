@@ -18,4 +18,8 @@ public class ApplicationUser : IdentityUser<Guid>
     public bool IsBlocked { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    public ICollection<Survey> Surveys { get; set; } = new List<Survey>();
+
+    public ICollection<SessionParticipant> SessionParticipants { get; set; } = new List<SessionParticipant>();
 }

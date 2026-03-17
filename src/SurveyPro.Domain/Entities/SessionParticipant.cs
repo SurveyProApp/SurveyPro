@@ -12,7 +12,13 @@ public class SessionParticipant
 
     public Guid SessionId { get; set; }
 
+    public SurveySession Session { get; set; } = null!;
+
     public Guid UserId { get; set; }
 
+    public ApplicationUser User { get; set; } = null!;
+
     public DateTime JoinedAt { get; set; }
+
+    public ICollection<Response> Responses { get; set; } = new List<Response>();
 }

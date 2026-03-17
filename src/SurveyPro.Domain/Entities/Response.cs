@@ -10,9 +10,13 @@ public class Response
 {
     public Guid Id { get; set; }
 
-    public Guid ParticipantId { get; set; }
+    public Guid SessionParticipantId { get; set; }
+
+    public SessionParticipant SessionParticipant { get; set; } = null!;
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public bool IsDraft { get; set; }
+
+    public ICollection<ResponseAnswer> Answers { get; set; } = new List<ResponseAnswer>();
 }

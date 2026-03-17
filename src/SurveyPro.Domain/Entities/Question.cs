@@ -12,9 +12,13 @@ public class Question
 
     public Guid SurveyId { get; set; }
 
+    public Survey Survey { get; set; } = null!;
+
     public string Text { get; set; } = string.Empty;
 
     public string Type { get; set; } = string.Empty;
 
     public int OrderNumber { get; set; }
+
+    public ICollection<AnswerOption> Options { get; set; } = new List<AnswerOption>();
 }

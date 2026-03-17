@@ -12,9 +12,13 @@ public class SurveySession
 
     public Guid SurveyId { get; set; }
 
+    public Survey Survey { get; set; } = null!;
+
     public string AccessCode { get; set; } = string.Empty;
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public bool IsActive { get; set; }
+
+    public ICollection<SessionParticipant> Participants { get; set; } = new List<SessionParticipant>();
 }

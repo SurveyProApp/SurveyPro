@@ -7,7 +7,7 @@ namespace SurveyPro.Web.Controllers
     using System.Diagnostics;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
-    using SurveyPro.Web.Models;
+    using SurveyPro.Web.ViewModels;
 
     public class HomeController : Controller
     {

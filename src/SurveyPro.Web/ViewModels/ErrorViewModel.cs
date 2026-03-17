@@ -2,7 +2,7 @@
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
-namespace SurveyPro.Web.Models
+namespace SurveyPro.Web.ViewModels
 {
     public class ErrorViewModel
     {

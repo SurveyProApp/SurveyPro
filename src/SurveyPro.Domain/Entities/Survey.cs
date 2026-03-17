@@ -16,9 +16,15 @@ public class Survey
 
     public Guid AuthorId { get; set; }
 
+    public ApplicationUser Author { get; set; } = null!;
+
     public string Status { get; set; } = string.Empty;
 
     public bool IsPublic { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    public ICollection<Question> Questions { get; set; } = new List<Question>();
+
+    public ICollection<SurveySession> Sessions { get; set; } = new List<SurveySession>();
 }

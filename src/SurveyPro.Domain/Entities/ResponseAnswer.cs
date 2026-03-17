@@ -12,7 +12,15 @@ public class ResponseAnswer
 
     public Guid ResponseId { get; set; }
 
+    public Response Response { get; set; } = null!;
+
+    public Guid QuestionId { get; set; }
+
+    public Question Question { get; set; } = null!;
+
     public Guid? OptionId { get; set; }
+
+    public AnswerOption? Option { get; set; }
 
     public string? TextAnswer { get; set; }
 }
