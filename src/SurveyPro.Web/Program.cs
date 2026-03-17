@@ -13,6 +13,9 @@ using SurveyPro.Infrastructure.Persistence;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
+/// <summary>
+/// Represents the main entry point for the SurveyPro web application.
+/// </summary>
 public class Program
 {
     private static async Task Main(string[] args)
@@ -55,13 +58,13 @@ public class Program
 
         using (var scope = app.Services.CreateScope())
         {
+            var db = scope.ServiceProvider.GetRequiredService<SurveyProDbContext>();
+            await db.Database.MigrateAsync();
+
             var roleManager =
                 scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
 
             await RoleSeeder.SeedRolesAsync(roleManager);
-
-            var db = scope.ServiceProvider.GetRequiredService<SurveyProDbContext>();
-            await db.Database.MigrateAsync();
         }
 
         // ��������� HTTP ������
@@ -85,5 +88,10 @@ public class Program
             pattern: "{controller=Home}/{action=Index}/{id?}");
 
         await app.RunAsync();
+    }
+
+    private static void AddClaimsPrincipalFactory<T>()
+    {
+        throw new NotImplementedException();
     }
 }
