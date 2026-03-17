@@ -7,9 +7,13 @@ namespace SurveyPro.Web;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using SurveyPro.Application.Interfaces;
+using SurveyPro.Application.Services;
 using SurveyPro.Domain.Entities;
 using SurveyPro.Infrastructure.Identity;
+using SurveyPro.Infrastructure.Interfaces;
 using SurveyPro.Infrastructure.Persistence;
+using SurveyPro.Infrastructure.Repositories;
 using System.Threading.Tasks;
 
 /// <summary>
@@ -52,6 +56,9 @@ public class Program
             options.LoginPath = "/Account/Login";
             options.AccessDeniedPath = "/Account/AccessDenied";
         });
+
+        builder.Services.AddScoped<ISurveyRepository, SurveyRepository>();
+        builder.Services.AddScoped<ISurveyService, SurveyService>();
 
         var app = builder.Build();
 
