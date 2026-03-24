@@ -1,4 +1,4 @@
-// <copyright file="SurveyService.cs" company="PlaceholderCompany">
+﻿// <copyright file="SurveyService.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
@@ -98,5 +98,27 @@ public sealed class SurveyService : ISurveyService
                 CreatedAt = s.CreatedAt,
             })
             .ToList();
+    }
+
+#pragma warning disable SA1202 // Elements should be ordered by access
+    public async Task<Result> PublishAsync(Guid surveyId, Guid authorId, CancellationToken cancellationToken)
+    {
+        var survey = await this.surveyRepository.GetByIdAsync(surveyId, cancellationToken);
+
+        if (survey == null)
+        {
+            return Result.Failure("Опитування не знайдено");
+        }
+
+        if (survey.AuthorId != authorId)
+        {
+            return Result.Failure("Немає доступу");
+        }
+
+        survey.IsPublic = true;
+        survey.Status = SurveyStatuses.Published;
+
+        await this.surveyRepository.UpdateAsync(survey, cancellationToken);
+        return Result.Success();
     }
 }

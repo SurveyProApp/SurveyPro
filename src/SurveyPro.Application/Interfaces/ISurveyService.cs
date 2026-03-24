@@ -17,4 +17,6 @@ public interface ISurveyService
     Task<Result<IReadOnlyCollection<SurveyListItemDto>>> GetMySurveysAsync(Guid authorId, CancellationToken cancellationToken);
 
     Task<Result<IReadOnlyCollection<SurveyListItemDto>>> GetPublicSurveysAsync(CancellationToken cancellationToken);
+
+    Task<Result> PublishAsync(Guid surveyId, Guid authorId, CancellationToken cancellationToken);
 }

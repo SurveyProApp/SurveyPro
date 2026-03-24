@@ -16,4 +16,8 @@ public interface ISurveyRepository
     Task<IReadOnlyCollection<Survey>> GetByAuthorIdAsync(Guid authorId, CancellationToken cancellationToken);
 
     Task<IReadOnlyCollection<Survey>> GetPublicAsync(CancellationToken cancellationToken);
+
+    Task<Survey?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
+
+    Task UpdateAsync(Survey survey, CancellationToken cancellationToken);
 }

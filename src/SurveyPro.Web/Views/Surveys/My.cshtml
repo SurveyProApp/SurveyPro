@@ -1,4 +1,5 @@
 @using SurveyPro.Application.DTOs.Surveys
+@using SurveyPro.Domain.Enums
 @model IReadOnlyCollection<SurveyListItemDto>
 
 @{
@@ -33,6 +34,7 @@ else
                 <th>Статус</th>
                 <th>Публічне</th>
                 <th>Створено</th>
+                <th>Дії</th>
             </tr>
         </thead>
         <tbody>
@@ -43,6 +45,22 @@ else
                     <td>@survey.Status</td>
                     <td>@(survey.IsPublic ? "Так" : "Ні")</td>
                     <td>@survey.CreatedAt.ToLocalTime().ToString("g")</td>
+
+                    <td>
+                        @if (survey.Status != SurveyStatuses.Published)
+                        {
+                            <form asp-action="Publish" method="post" style="display:inline;">
+                                <input type="hidden" name="id" value="@survey.Id" />
+                                <button type="submit" class="btn btn-success btn-sm">
+                                    Опублікувати
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <span class="text-success">Опубліковано</span>
+                        }
+                    </td>
                 </tr>
             }
         </tbody>

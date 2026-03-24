@@ -52,4 +52,16 @@ public sealed class SurveyRepository : ISurveyRepository
             .AsNoTracking()
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<Survey?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+    {
+        return await this.dbContext.Surveys
+            .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
+    }
+
+    public async Task UpdateAsync(Survey survey, CancellationToken cancellationToken)
+    {
+        this.dbContext.Surveys.Update(survey);
+        await this.dbContext.SaveChangesAsync(cancellationToken);
+    }
 }

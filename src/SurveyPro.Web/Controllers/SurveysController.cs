@@ -113,4 +113,29 @@ public class SurveysController : Controller
 
         return (false, parsed);
     }
+
+    [Authorize(Roles = "Author")]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+#pragma warning disable SA1202 // Elements should be ordered by access
+    public async Task<IActionResult> Publish(Guid id, CancellationToken cancellationToken)
+#pragma warning restore SA1202 // Elements should be ordered by access
+    {
+        var authorIdResult = this.GetCurrentUserId();
+        if (authorIdResult.IsFailure)
+        {
+            return this.RedirectToAction("Login", "Account");
+        }
+
+        var result = await this.surveyService.PublishAsync(id, authorIdResult.Value, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            TempData["ErrorMessage"] = result.Error;
+            return this.RedirectToAction(nameof(this.My));
+        }
+
+        TempData["SuccessMessage"] = "Опитування опубліковано.";
+        return this.RedirectToAction(nameof(this.My));
+    }
 }
