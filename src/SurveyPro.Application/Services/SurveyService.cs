@@ -84,23 +84,6 @@ public sealed class SurveyService : ISurveyService
         return Result<IReadOnlyCollection<SurveyListItemDto>>.Success(MapToList(surveys));
     }
 
-    private static IReadOnlyCollection<SurveyListItemDto> MapToList(IEnumerable<Survey> surveys)
-    {
-        return surveys
-            .OrderByDescending(s => s.CreatedAt)
-            .Select(s => new SurveyListItemDto
-            {
-                Id = s.Id,
-                Title = s.Title,
-                Description = s.Description,
-                Status = s.Status,
-                IsPublic = s.IsPublic,
-                CreatedAt = s.CreatedAt,
-            })
-            .ToList();
-    }
-
-#pragma warning disable SA1202 // Elements should be ordered by access
     public async Task<Result> PublishAsync(Guid surveyId, Guid authorId, CancellationToken cancellationToken)
     {
         var survey = await this.surveyRepository.GetByIdAsync(surveyId, cancellationToken);
@@ -115,7 +98,6 @@ public sealed class SurveyService : ISurveyService
             return Result.Failure("Немає доступу");
         }
 
-        survey.IsPublic = true;
         survey.Status = SurveyStatuses.Published;
 
         await this.surveyRepository.UpdateAsync(survey, cancellationToken);
@@ -140,5 +122,21 @@ public sealed class SurveyService : ISurveyService
         this.logger.LogInformation("Survey {SurveyId} deleted", surveyId);
 
         return Result.Success();
+    }
+
+    private static IReadOnlyCollection<SurveyListItemDto> MapToList(IEnumerable<Survey> surveys)
+    {
+        return surveys
+            .OrderByDescending(s => s.CreatedAt)
+            .Select(s => new SurveyListItemDto
+            {
+                Id = s.Id,
+                Title = s.Title,
+                Description = s.Description,
+                Status = s.Status,
+                IsPublic = s.IsPublic,
+                CreatedAt = s.CreatedAt,
+            })
+            .ToList();
     }
 }
