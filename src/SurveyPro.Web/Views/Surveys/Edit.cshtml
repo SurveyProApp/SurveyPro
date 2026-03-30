@@ -82,17 +82,44 @@
             form.style.display = form.style.display === "none" ? "block" : "none";
         }
 
-        function addOption() {
+        function addOption(value = "") {
             const container = document.getElementById("optionsContainer");
 
             const index = container.children.length;
 
+            const wrapper = document.createElement("div");
+            wrapper.className = "d-flex mt-1";
+
             const input = document.createElement("input");
             input.name = `Options[${index}]`;
-            input.className = "form-control mt-1";
+            input.className = "form-control";
             input.placeholder = "Option";
+            input.value = value;
 
-            container.appendChild(input);
+            const removeBtn = document.createElement("button");
+            removeBtn.type = "button";
+            removeBtn.className = "btn btn-danger ms-2";
+            removeBtn.innerText = "X";
+
+            removeBtn.onclick = function () {
+                if (container.children.length <= 2) return;
+                wrapper.remove();
+                reindexOptions();
+            };
+
+            wrapper.appendChild(input);
+            wrapper.appendChild(removeBtn);
+
+            container.appendChild(wrapper);
+        }
+
+        function reindexOptions() {
+            const container = document.getElementById("optionsContainer");
+            const inputs = container.querySelectorAll("input");
+
+            inputs.forEach((input, index) => {
+                input.name = `Options[${index}]`;
+            });
         }
 
         function handleTypeChange() {
@@ -123,13 +150,8 @@
                     "Strongly agree"
                 ];
 
-                likert.forEach((text, i) => {
-                    const input = document.createElement("input");
-                    input.name = `Options[${i}]`;
-                    input.value = text;
-                    input.className = "form-control mt-1";
-
-                    container.appendChild(input);
+                likert.forEach(text => {
+                    addOption(text);
                 });
             }
         }
