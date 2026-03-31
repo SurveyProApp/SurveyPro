@@ -51,18 +51,15 @@
 @if (Model.Questions != null && Model.Questions.Any())
 {
     <div class="mt-3">
-        @foreach (var q in Model.Questions.OrderBy(q => q.OrderNumber))
+       @foreach (var q in Model.Questions.OrderBy(q => q.OrderNumber))
         {
             <div class="card mb-2">
                 <div class="card-body">
-        
                     <div class="d-flex justify-content-between align-items-start">
-        
-                        
                         <div>
                             <h5>@q.OrderNumber. @q.Text</h5>
                             <small class="text-muted">Type: @q.Type</small>
-        
+
                             @if (q.Options != null && q.Options.Any())
                             {
                                 <ul class="mt-2">
@@ -73,20 +70,71 @@
                                 </ul>
                             }
                         </div>
-        
-                        
-                        <form asp-controller="Questions" asp-action="Delete" method="post">
-                            @Html.AntiForgeryToken()
 
-                            <input type="hidden" name="id" value="@q.Id" />
-                            <input type="hidden" name="surveyId" value="@Model.Id" />
-        
-                            <button type="submit" class="btn btn-danger btn-sm">🗑</button>
-                        </form>
-        
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-warning btn-sm"
+                                    onclick="toggleEditForm('@q.Id')">✏️</button>
+
+                            <form asp-controller="Questions" asp-action="Delete" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@q.Id" />
+                                <input type="hidden" name="surveyId" value="@Model.Id" />
+                                <button type="submit" class="btn btn-danger btn-sm">🗑</button>
+                            </form>
+                        </div>
                     </div>
-        
                 </div>
+            </div>
+
+            <div id="editForm-@q.Id" style="display:none;" class="mb-3 border p-3 rounded">
+                <form asp-controller="Questions" asp-action="Edit" method="post"
+                    onsubmit="return validateEditForm(this, '@q.Id')">
+                    @Html.AntiForgeryToken()
+
+                    <input type="hidden" name="Id" value="@q.Id" />
+                    <input type="hidden" name="SurveyId" value="@Model.Id" />
+
+                    <div class="mb-2">
+                        <input name="Text" class="form-control" placeholder="Enter your question..."
+                            value="@q.Text" />
+                    </div>
+
+                    <div class="mb-2">
+                        <select name="Type" id="editType-@q.Id" class="form-select"
+                                onchange="handleEditTypeChange('@q.Id')">
+                            <option value="Text" selected="@(q.Type == "Text")">Text</option>
+                            <option value="SingleChoice" selected="@(q.Type == "SingleChoice")">Single Choice</option>
+                            <option value="MultipleChoice" selected="@(q.Type == "MultipleChoice")">Multiple Choice</option>
+                            <option value="Likert" selected="@(q.Type == "Likert")">Likert Scale</option>
+                        </select>
+                    </div>
+
+                    <div id="editOptionsBlock-@q.Id"
+                        style="display:@(q.Type != "Text" ? "block" : "none");">
+                        <div id="editOptionsContainer-@q.Id" class="mb-2">
+                            @if (q.Options != null)
+                            {
+                                @for (int i = 0; i < q.Options.Count; i++)
+                                {
+                                    <div class="d-flex mt-1 edit-option-row-@q.Id">
+                                        <input name="Options[@i]" class="form-control"
+                                            placeholder="Option" value="@q.Options[i]" />
+                                        <button type="button" class="btn btn-danger ms-2"
+                                                onclick="removeEditOption(this, '@q.Id')">X</button>
+                                    </div>
+                                }
+                            }
+                        </div>
+                        <button type="button" class="btn btn-secondary btn-sm"
+                                onclick="addEditOption('@q.Id')">+ Add Option</button>
+                    </div>
+
+                    <div class="mt-2 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                        <button type="button" class="btn btn-secondary"
+                                onclick="toggleEditForm('@q.Id')">Cancel</button>
+                    </div>
+                </form>
             </div>
         }
     </div>
@@ -98,7 +146,8 @@ else
 
 <div id="questionForm" style="display:none;" class="mt-3 border p-3 rounded">
 
-    <form asp-controller="Questions" asp-action="Create" method="post">
+    <form asp-controller="Questions" asp-action="Create" method="post"
+        onsubmit="return validateCreateForm(this)">
         <input type="hidden" name="SurveyId" value="@Model.Id" />
 
         <div class="mb-2">
@@ -142,6 +191,11 @@ else
             form.style.display = form.style.display === "none" ? "block" : "none";
         }
 
+        function toggleEditForm(id) {
+            const form = document.getElementById("editForm-" + id);
+            form.style.display = form.style.display === "none" ? "block" : "none";
+        }
+
         function addOption(value = "") {
             const container = document.getElementById("optionsContainer");
             const index = container.children.length;
@@ -171,6 +225,30 @@ else
             container.appendChild(wrapper);
         }
 
+        function addEditOption(id, value = "") {
+            const container = document.getElementById("editOptionsContainer-" + id);
+            const index = container.children.length;
+
+            const wrapper = document.createElement("div");
+            wrapper.className = "d-flex mt-1 edit-option-row-" + id;
+
+            const input = document.createElement("input");
+            input.name = `Options[${index}]`;
+            input.className = "form-control";
+            input.placeholder = "Option";
+            input.value = value;
+
+            const removeBtn = document.createElement("button");
+            removeBtn.type = "button";
+            removeBtn.className = "btn btn-danger ms-2";
+            removeBtn.innerText = "X";
+            removeBtn.onclick = function () { removeEditOption(removeBtn, id); };
+
+            wrapper.appendChild(input);
+            wrapper.appendChild(removeBtn);
+            container.appendChild(wrapper);
+        }
+
         function reindexOptions() {
             const container = document.getElementById("optionsContainer");
             const inputs = container.querySelectorAll("input");
@@ -178,6 +256,20 @@ else
             inputs.forEach((input, index) => {
                 input.name = `Options[${index}]`;
             });
+        }
+
+        function reindexEditOptions(id) {
+            const container = document.getElementById("editOptionsContainer-" + id);
+            container.querySelectorAll("input").forEach((input, i) => {
+                input.name = `Options[${i}]`;
+            });
+        }
+
+        function removeEditOption(btn, id) {
+            const container = document.getElementById("editOptionsContainer-" + id);
+            if (container.children.length <= 2) return;
+            btn.closest(".d-flex").remove();
+            reindexEditOptions(id);
         }
 
         function handleTypeChange() {
@@ -210,6 +302,93 @@ else
 
                 likert.forEach(text => addOption(text));
             }
+        }
+
+        function handleEditTypeChange(id) {
+            const type = document.getElementById("editType-" + id).value;
+            const container = document.getElementById("editOptionsContainer-" + id);
+            const block = document.getElementById("editOptionsBlock-" + id);
+
+            container.innerHTML = "";
+
+            if (type === "Text") {
+                block.style.display = "none";
+                return;
+            }
+
+            block.style.display = "block";
+
+            if (type === "SingleChoice" || type === "MultipleChoice") {
+                addEditOption(id); addEditOption(id);
+            }
+
+            if (type === "Likert") {
+                ["Strongly disagree", "Disagree", "Neutral", "Agree", "Strongly agree"]
+                    .forEach(t => addEditOption(id, t));
+            }
+        }
+
+        function validateEditForm(form, id) {
+            const textInput = form.querySelector("input[name='Text']");
+            const type = document.getElementById("editType-" + id).value;
+            const container = document.getElementById("editOptionsContainer-" + id);
+
+            clearErrors(form);
+
+            let valid = true;
+
+            if (!textInput.value.trim()) {
+                showError(textInput, "Question text is required");
+                valid = false;
+            }
+
+            if (type === "SingleChoice" || type === "MultipleChoice") {
+                const inputs = container.querySelectorAll("input");
+                const filled = Array.from(inputs).filter(i => i.value.trim() !== "");
+                if (filled.length < 2) {
+                    showError(container, "At least 2 options are required");
+                    valid = false;
+                }
+            }
+
+            return valid;
+        }
+
+        function validateCreateForm(form) {
+            const textInput = form.querySelector("input[name='Text']");
+            const typeSelect = form.querySelector("select[name='Type']");
+            const container = document.getElementById("optionsContainer");
+
+            clearErrors(form);
+
+            let valid = true;
+
+            if (!textInput.value.trim()) {
+                showError(textInput, "Question text is required");
+                valid = false;
+            }
+
+            if (typeSelect.value === "SingleChoice" || typeSelect.value === "MultipleChoice") {
+                const inputs = container.querySelectorAll("input");
+                const filled = Array.from(inputs).filter(i => i.value.trim() !== "");
+                if (filled.length < 2) {
+                    showError(container, "At least 2 options are required");
+                    valid = false;
+                }
+            }
+
+            return valid;
+        }
+
+        function showError(element, message) {
+            const span = document.createElement("span");
+            span.className = "text-danger validation-error";
+            span.innerText = message;
+            element.parentNode.insertBefore(span, element.nextSibling);
+        }
+
+        function clearErrors(form) {
+            form.querySelectorAll(".validation-error").forEach(el => el.remove());
         }
     </script>
 }

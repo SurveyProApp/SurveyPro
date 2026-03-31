@@ -20,7 +20,15 @@ public interface IQuestionService
         CreateQuestionRequestDto request,
         CancellationToken cancellationToken);
 
+    Task<Result> UpdateAsync(
+    Guid questionId,
+    Guid authorId,
+    UpdateQuestionRequestDto request,
+    CancellationToken cancellationToken);
+
     Task<List<QuestionDto>> GetBySurveyIdAsync(Guid surveyId, CancellationToken cancellationToken);
 
-    Task DeleteAsync(Guid questionId, CancellationToken cancellationToken);
+    Task<Result<QuestionDto>> GetByIdAsync(Guid questionId, CancellationToken cancellationToken);
+
+    Task<Result> DeleteAsync(Guid questionId, CancellationToken cancellationToken);
 }

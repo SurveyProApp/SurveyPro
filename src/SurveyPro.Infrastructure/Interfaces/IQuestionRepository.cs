@@ -25,5 +25,7 @@ public interface IQuestionRepository
 
     Task<Question?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
 
+    Task RemoveOptionsAsync(Guid questionId, CancellationToken cancellationToken);
+
     void Remove(Question question);
 }

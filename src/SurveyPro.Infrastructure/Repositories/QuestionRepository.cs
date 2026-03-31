@@ -60,6 +60,15 @@ public class QuestionRepository : IQuestionRepository
             .FirstOrDefaultAsync(q => q.Id == id, cancellationToken);
     }
 
+    public async Task RemoveOptionsAsync(Guid questionId, CancellationToken cancellationToken)
+    {
+        var options = await dbContext.AnswerOptions
+            .Where(o => o.QuestionId == questionId)
+            .ToListAsync(cancellationToken);
+
+        dbContext.AnswerOptions.RemoveRange(options);
+    }
+
     public void Remove(Question question)
     {
         dbContext.Questions.Remove(question);

@@ -101,6 +101,71 @@ public class QuestionService : IQuestionService
         return question.Id;
     }
 
+    public async Task<Result> UpdateAsync(
+        Guid questionId,
+        Guid authorId,
+        UpdateQuestionRequestDto request,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request.Text))
+        {
+            return "Question text is required";
+        }
+
+        var question = await repository.GetByIdAsync(questionId, cancellationToken);
+
+        if (question == null)
+        {
+            return "Question not found";
+        }
+
+        var survey = await repository.GetSurveyByIdAsync(question.SurveyId, cancellationToken);
+
+        if (survey == null)
+        {
+            return "Survey not found";
+        }
+
+        if (survey.AuthorId != authorId)
+        {
+            return "Access denied";
+        }
+
+        if (request.Type == "Text")
+        {
+            request.Options = null;
+        }
+
+        if ((request.Type == "SingleChoice" || request.Type == "MultipleChoice")
+            && (request.Options == null || request.Options.Count < 2))
+        {
+            return "At least 2 options are required";
+        }
+
+        question.Text = request.Text.Trim();
+        question.Type = request.Type;
+
+        await repository.RemoveOptionsAsync(questionId, cancellationToken);
+
+        if (request.Options != null && request.Options.Any())
+        {
+            var options = request.Options.Select(o => new AnswerOption
+            {
+                Id = Guid.NewGuid(),
+                QuestionId = question.Id,
+                Text = o,
+            });
+
+            await repository.AddOptionsAsync(options, cancellationToken);
+        }
+
+        await repository.SaveChangesAsync(cancellationToken);
+
+        logger.LogInformation("Question {QuestionId} updated", question.Id);
+
+        return Result.Success();
+    }
+
     public async Task<List<QuestionDto>> GetBySurveyIdAsync(Guid surveyId, CancellationToken cancellationToken)
     {
         var questions = await repository.GetQuestionsBySurveyIdAsync(surveyId, cancellationToken);
@@ -115,21 +180,39 @@ public class QuestionService : IQuestionService
         }).ToList();
     }
 
-    public async Task DeleteAsync(Guid questionId, CancellationToken cancellationToken)
+    public async Task<Result<QuestionDto>> GetByIdAsync(Guid questionId, CancellationToken cancellationToken)
     {
         var question = await repository.GetByIdAsync(questionId, cancellationToken);
+
         if (question == null)
         {
-            return;
+            return "Question not found";
+        }
+
+        return new QuestionDto
+        {
+            Id = question.Id,
+            Text = question.Text,
+            Type = question.Type,
+            OrderNumber = question.OrderNumber,
+            Options = question.Options?.Select(o => o.Text).ToList(),
+        };
+    }
+
+    public async Task<Result> DeleteAsync(Guid questionId, CancellationToken cancellationToken)
+    {
+        var question = await repository.GetByIdAsync(questionId, cancellationToken);
+
+        if (question == null)
+        {
+            return Result.Failure("Question not found");
         }
 
         var surveyId = question.SurveyId;
 
         repository.Remove(question);
-
         await repository.SaveChangesAsync(cancellationToken);
 
-        // 🔥 ПЕРЕНОМЕРАЦІЯ
         var questions = await repository.GetQuestionsBySurveyIdAsync(surveyId, cancellationToken);
 
         var ordered = questions
@@ -142,11 +225,8 @@ public class QuestionService : IQuestionService
         }
 
         await repository.SaveChangesAsync(cancellationToken);
-    }
 
-    public Task<Question?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
+        return Result.Success();
     }
 
     public void Remove(Question question)
