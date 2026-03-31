@@ -34,7 +34,12 @@ public class SurveysControllerTests
         Guid? userId = null)
     {
         var logger = new Mock<ILogger<SurveysController>>();
-        var controller = new SurveysController(surveyService.Object, logger.Object);
+        var questionService = new Mock<IQuestionService>();
+
+        var controller = new SurveysController(
+            surveyService.Object,
+            logger.Object,
+            questionService.Object);
 
         var actualUserId = userId ?? ValidAuthorId;
         var claims = new[] { new Claim(ClaimTypes.NameIdentifier, actualUserId.ToString()) };
@@ -51,7 +56,11 @@ public class SurveysControllerTests
     private static SurveysController BuildControllerWithoutUser(Mock<ISurveyService> surveyService)
     {
         var logger = new Mock<ILogger<SurveysController>>();
-        var controller = new SurveysController(surveyService.Object, logger.Object);
+        var questionService = new Mock<IQuestionService>();
+        var controller = new SurveysController(
+           surveyService.Object,
+           logger.Object,
+           questionService.Object);
 
         var identity = new ClaimsIdentity();
         var principal = new ClaimsPrincipal(identity);
@@ -156,7 +165,7 @@ public class SurveysControllerTests
 
         // Assert
         result.Should().BeOfType<RedirectToActionResult>()
-            .Which.ActionName.Should().Be("My");
+            .Which.ActionName.Should().Be("Edit");
         controller.TempData["SuccessMessage"].Should().Be("Survey created.");
     }
 
