@@ -118,3 +118,101 @@
         <a asp-controller="Surveys" asp-action="Index" class="btn btn-outline-secondary">Back to public surveys</a>
     </div>
 </form>
+<script>
+    let timeout = null;
+
+    function collectFormData() {
+        const questions = [];
+
+        document.querySelectorAll('.card').forEach((card, index) => {
+            const questionId = card.querySelector('[name="Questions[' + index + '].QuestionId"]').value;
+            const type = card.querySelector('[name="Questions[' + index + '].Type"]').value;
+
+            let textAnswer = null;
+            let selectedOptionId = null;
+            let selectedOptionIds = [];
+
+            const textarea = card.querySelector('textarea');
+            if (textarea) {
+                textAnswer = textarea.value;
+            }
+
+            const radio = card.querySelector('input[type="radio"]:checked');
+            if (radio) {
+                selectedOptionId = radio.value;
+            }
+
+            const checkboxes = card.querySelectorAll('input[type="checkbox"]:checked');
+            checkboxes.forEach(cb => selectedOptionIds.push(cb.value));
+
+            questions.push({
+                questionId,
+                type,
+                textAnswer,
+                selectedOptionId,
+                selectedOptionIds
+            });
+        });
+
+        return {
+            surveyId: document.querySelector('[name="SurveyId"]').value,
+            accessCode: document.querySelector('[name="AccessCode"]').value,
+            questions: questions
+        };
+    }
+
+    function autoSave() {
+        clearTimeout(timeout);
+
+        timeout = setTimeout(() => {
+            const data = collectFormData();
+
+            fetch('@Url.Action("SaveDraft", "Participation")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify(data)
+            })
+            .then(res => {
+                if (res.ok) {
+                    console.log("Draft saved");
+                    showSavedIndicator();
+                }
+            })
+            .catch(err => console.error(err));
+
+        }, 800); // debounce
+    }
+
+    function showSavedIndicator() {
+        let el = document.getElementById("autosave-status");
+
+        if (!el) {
+            el = document.createElement("div");
+            el.id = "autosave-status";
+            el.style.position = "fixed";
+            el.style.bottom = "20px";
+            el.style.right = "20px";
+            el.style.background = "#28a745";
+            el.style.color = "white";
+            el.style.padding = "10px 15px";
+            el.style.borderRadius = "8px";
+            el.innerText = "Saved";
+            document.body.appendChild(el);
+        }
+
+        el.style.opacity = "1";
+
+        setTimeout(() => {
+            el.style.opacity = "0";
+        }, 1500);
+    }
+
+    // ñëóõàºìî ÂÑ² çì³íè
+    document.querySelectorAll('textarea, input').forEach(el => {
+        el.addEventListener('input', autoSave);
+        el.addEventListener('change', autoSave);
+    });
+</script>

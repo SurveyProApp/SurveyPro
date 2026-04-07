@@ -81,6 +81,38 @@ public sealed class ParticipationController : BaseController
         return this.RedirectToAction(nameof(this.Join), new { code = model.AccessCode });
     }
 
+    [Authorize(Roles = "Respondent")]
+    [HttpPost]
+    public async Task<IActionResult> SaveDraft([FromBody] SurveyParticipationViewModel model, CancellationToken cancellationToken)
+    {
+        var userId = this.GetCurrentUserId();
+        if (userId.IsFailure)
+        {
+            return Unauthorized();
+        }
+
+        var request = new SaveDraftRequestDto
+        {
+            SurveyId = model.SurveyId,
+            AccessCode = model.AccessCode,
+            Answers = model.Questions.Select(question => new ParticipationAnswerDto
+            {
+                QuestionId = question.QuestionId,
+                TextAnswer = question.TextAnswer,
+                SelectedOptionIds = this.GetSelectedOptionIds(question),
+            }).ToList(),
+        };
+
+        var result = await this.surveyParticipationService.SaveDraftAsync(userId.Value, request, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return BadRequest(result.Error);
+        }
+
+        return Ok();
+    }
+
     private SurveyParticipationViewModel MapToViewModel(SurveyParticipationDto dto)
     {
         var draftAnswers = dto.DraftAnswers.ToDictionary(answer => answer.QuestionId);

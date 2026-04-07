@@ -232,4 +232,31 @@ public class SurveysController : BaseController
 
         return this.RedirectToAction(nameof(this.My));
     }
+
+    [Authorize(Roles = "Author")]
+    [HttpPost]
+    public async Task<IActionResult> SaveDraft([FromBody] EditSurveyViewModel model, CancellationToken cancellationToken)
+    {
+        var authorIdResult = this.GetCurrentUserId();
+        if (authorIdResult.IsFailure)
+        {
+            return Unauthorized();
+        }
+
+        var request = new UpdateSurveyRequestDto
+        {
+            Title = model.Title,
+            Description = model.Description,
+            IsPublic = model.IsPublic,
+        };
+
+        var result = await this.surveyService.UpdateAsync(model.Id, authorIdResult.Value, request, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return BadRequest(result.Error);
+        }
+
+        return Ok();
+    }
 }
