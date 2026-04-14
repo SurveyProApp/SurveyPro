@@ -301,6 +301,38 @@ public class SurveysController : BaseController
         return this.View(this.MapToResponsesViewModel(result.Value!));
     }
 
+    [Authorize(Roles = "Author,Admin")]
+    [HttpGet]
+    public async Task<IActionResult> ExportResponsesPdf(Guid id, CancellationToken cancellationToken)
+    {
+        var currentUserId = this.GetCurrentUserId();
+        if (currentUserId.IsFailure)
+        {
+            return this.RedirectToAction("Login", "Account");
+        }
+
+        var result = await this.surveyService.GetSurveyResponsesAsync(
+            id,
+            currentUserId.Value,
+            this.User.IsInRole("Admin"),
+            cancellationToken);
+
+        if (result.IsFailure)
+        {
+            TempData["ErrorMessage"] = result.Error;
+            return this.RedirectToAction(nameof(this.Responses), new { id });
+        }
+
+        var viewModel = this.MapToResponsesViewModel(result.Value!);
+
+        var pdfBytes = SurveyPro.Web.Services.SurveyPdfExporter.GenerateResponsesPdf(viewModel);
+
+        return File(
+            pdfBytes,
+            "application/pdf",
+            $"SurveyResults_{viewModel.SurveyTitle}_{DateTime.UtcNow:yyyyMMddHHmmss}.pdf");
+    }
+
     private SurveyResponsesViewModel MapToResponsesViewModel(SurveyResponsesDto dto)
     {
         return new SurveyResponsesViewModel

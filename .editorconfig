@@ -8,3 +8,6 @@ dotnet_diagnostic.SA1600.severity = none
 
 # IDE0058: Expression value is never used
 dotnet_diagnostic.IDE0058.severity = none
+
+# SA1200: Using directives should be placed correctly
+dotnet_diagnostic.SA1200.severity = none
