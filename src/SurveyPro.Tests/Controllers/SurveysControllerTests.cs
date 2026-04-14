@@ -31,7 +31,8 @@ public class SurveysControllerTests
 
     private static SurveysController BuildController(
         Mock<ISurveyService> surveyService,
-        Guid? userId = null)
+        Guid? userId = null,
+        bool isAdmin = false)
     {
         var logger = new Mock<ILogger<SurveysController>>();
         var questionService = new Mock<IQuestionService>();
@@ -42,7 +43,18 @@ public class SurveysControllerTests
             questionService.Object);
 
         var actualUserId = userId ?? ValidAuthorId;
-        var claims = new[] { new Claim(ClaimTypes.NameIdentifier, actualUserId.ToString()) };
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, actualUserId.ToString()),
+        };
+
+        if (isAdmin)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, "Admin"));
+        }
+
+        claims.Add(new Claim(ClaimTypes.Role, "Author"));
+
         var identity = new ClaimsIdentity(claims, "Test");
         var principal = new ClaimsPrincipal(identity);
 
@@ -565,5 +577,82 @@ public class SurveysControllerTests
         result.Should().BeOfType<RedirectToActionResult>()
             .Which.ActionName.Should().Be("My");
         controller.TempData["ErrorMessage"].Should().Be("Access denied");
+    }
+
+    [Fact]
+    public async Task Responses_WhenServiceFails_RedirectsToMyAndSetsError()
+    {
+        // Arrange
+        var service = new Mock<ISurveyService>();
+        service
+            .Setup(s => s.GetSurveyResponsesAsync(
+                ValidSurveyId,
+                ValidAuthorId,
+                false,
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result<SurveyResponsesDto>.Failure("Access denied."));
+
+        var controller = BuildController(service);
+
+        // Act
+        var result = await controller.Responses(ValidSurveyId, CancellationToken.None);
+
+        // Assert
+        result.Should().BeOfType<RedirectToActionResult>()
+            .Which.ActionName.Should().Be("My");
+        controller.TempData["ErrorMessage"].Should().Be("Access denied.");
+    }
+
+    [Fact]
+    public async Task Responses_ForAdmin_Success_ReturnsViewModel()
+    {
+        // Arrange
+        var service = new Mock<ISurveyService>();
+        service
+            .Setup(s => s.GetSurveyResponsesAsync(
+                ValidSurveyId,
+                ValidAuthorId,
+                true,
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result<SurveyResponsesDto>.Success(new SurveyResponsesDto
+            {
+                SurveyId = ValidSurveyId,
+                SurveyTitle = "Quarterly Survey",
+                TotalSubmittedResponses = 1,
+                Responses = new[]
+                {
+                    new SurveyResponseDto
+                    {
+                        ResponseId = Guid.NewGuid(),
+                        RespondentUserId = Guid.NewGuid(),
+                        RespondentName = "John",
+                        RespondentEmail = "john@example.com",
+                        SubmittedAt = DateTime.UtcNow,
+                        Answers = new[]
+                        {
+                            new SurveyResponseAnswerDto
+                            {
+                                QuestionId = Guid.NewGuid(),
+                                QuestionOrderNumber = 1,
+                                QuestionText = "How was your experience?",
+                                QuestionType = "Text",
+                                TextAnswer = "Great",
+                            },
+                        },
+                    },
+                },
+            }));
+
+        var controller = BuildController(service, isAdmin: true);
+
+        // Act
+        var result = await controller.Responses(ValidSurveyId, CancellationToken.None);
+
+        // Assert
+        var view = result.Should().BeOfType<ViewResult>().Subject;
+        var model = view.Model.Should().BeOfType<SurveyResponsesViewModel>().Subject;
+        model.SurveyId.Should().Be(ValidSurveyId);
+        model.TotalSubmittedResponses.Should().Be(1);
+        model.Responses.Should().ContainSingle();
     }
 }

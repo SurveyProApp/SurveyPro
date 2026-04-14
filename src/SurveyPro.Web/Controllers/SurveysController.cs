@@ -110,6 +110,11 @@ public class SurveysController : BaseController
     [Authorize(Roles = "Author")]
     public async Task<IActionResult> Edit(Guid id, CancellationToken cancellationToken)
     {
+        if (!this.ModelState.IsValid)
+        {
+            return this.View();
+        }
+
         var authorIdResult = this.GetCurrentUserId();
         if (authorIdResult.IsFailure)
         {
@@ -237,6 +242,11 @@ public class SurveysController : BaseController
     [HttpPost]
     public async Task<IActionResult> SaveDraft([FromBody] EditSurveyViewModel model, CancellationToken cancellationToken)
     {
+        if (!this.ModelState.IsValid)
+        {
+            return this.View(model);
+        }
+
         var authorIdResult = this.GetCurrentUserId();
         if (authorIdResult.IsFailure)
         {
@@ -258,5 +268,72 @@ public class SurveysController : BaseController
         }
 
         return Ok();
+    }
+
+    [Authorize(Roles = "Author,Admin")]
+    [HttpGet]
+    public async Task<IActionResult> Responses(Guid id, CancellationToken cancellationToken)
+    {
+        var currentUserId = this.GetCurrentUserId();
+        if (currentUserId.IsFailure)
+        {
+            return this.RedirectToAction("Login", "Account");
+        }
+
+        var result = await this.surveyService.GetSurveyResponsesAsync(
+            id,
+            currentUserId.Value,
+            this.User.IsInRole("Admin"),
+            cancellationToken);
+
+        if (result.IsFailure)
+        {
+            TempData["ErrorMessage"] = result.Error;
+
+            if (this.User.IsInRole("Author"))
+            {
+                return this.RedirectToAction(nameof(this.My));
+            }
+
+            return this.RedirectToAction(nameof(this.Index));
+        }
+
+        return this.View(this.MapToResponsesViewModel(result.Value!));
+    }
+
+    private SurveyResponsesViewModel MapToResponsesViewModel(SurveyResponsesDto dto)
+    {
+        return new SurveyResponsesViewModel
+        {
+            SurveyId = dto.SurveyId,
+            SurveyTitle = dto.SurveyTitle,
+            SurveyDescription = dto.SurveyDescription,
+            AccessCode = dto.AccessCode,
+            TotalSubmittedResponses = dto.TotalSubmittedResponses,
+            Responses = dto.Responses
+                .OrderByDescending(response => response.SubmittedAt)
+                .Select(response => new SurveyResponseViewModel
+                {
+                    ResponseId = response.ResponseId,
+                    RespondentUserId = response.RespondentUserId,
+                    RespondentName = response.RespondentName,
+                    RespondentEmail = response.RespondentEmail,
+                    SubmittedAt = response.SubmittedAt,
+                    Answers = response.Answers
+                        .OrderBy(answer => answer.QuestionOrderNumber)
+                        .Select(answer => new SurveyResponseAnswerViewModel
+                        {
+                            QuestionId = answer.QuestionId,
+                            QuestionOrderNumber = answer.QuestionOrderNumber,
+                            QuestionText = answer.QuestionText,
+                            QuestionType = answer.QuestionType,
+                            TextAnswer = answer.TextAnswer,
+                            SelectedOptionIds = answer.SelectedOptionIds.ToList(),
+                            SelectedOptionTexts = answer.SelectedOptionTexts.ToList(),
+                        })
+                        .ToList(),
+                })
+                .ToList(),
+        };
     }
 }

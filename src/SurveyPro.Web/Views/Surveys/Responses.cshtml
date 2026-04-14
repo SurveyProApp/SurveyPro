@@ -1,0 +1,145 @@
+@model SurveyPro.Web.ViewModels.Surveys.SurveyResponsesViewModel
+
+@{
+    ViewData["Title"] = "Survey Responses";
+}
+
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+    <div>
+        <h1 class="mb-1">@Model.SurveyTitle</h1>
+        @if (!string.IsNullOrWhiteSpace(Model.SurveyDescription))
+        {
+            <p class="text-muted mb-0">@Model.SurveyDescription</p>
+        }
+    </div>
+
+    <div class="d-flex gap-2">
+        @if (User.IsInRole("Author"))
+        {
+            <a asp-action="My" class="btn btn-outline-secondary">Back to my surveys</a>
+        }
+        else
+        {
+            <a asp-action="Index" class="btn btn-outline-secondary">Back to surveys</a>
+        }
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-uppercase text-muted small">Submitted responses</div>
+                <div class="display-6 fw-semibold">@Model.TotalSubmittedResponses</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-uppercase text-muted small">Access code</div>
+                @if (!string.IsNullOrWhiteSpace(Model.AccessCode))
+                {
+                    <div class="h4 mb-0"><code>@Model.AccessCode</code></div>
+                }
+                else
+                {
+                    <div class="text-muted">No active code</div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-uppercase text-muted small">Prepared for next steps</div>
+                <div class="small text-muted">
+                    Data is already structured for statistics, charts, and export scenarios.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (!Model.Responses.Any())
+{
+    <div class="alert alert-info">
+        There are no submitted responses yet.
+    </div>
+}
+else
+{
+    <div class="accordion" id="responsesAccordion">
+        @for (var i = 0; i < Model.Responses.Count; i++)
+        {
+            var response = Model.Responses[i];
+            var headingId = $"response-heading-{i}";
+            var collapseId = $"response-collapse-{i}";
+
+            <div class="accordion-item mb-2 border rounded-3 overflow-hidden">
+                <h2 class="accordion-header" id="@headingId">
+                    <button class="accordion-button @(i == 0 ? string.Empty : "collapsed")"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#@collapseId"
+                            aria-expanded="@(i == 0 ? "true" : "false")"
+                            aria-controls="@collapseId">
+                        <div class="d-flex justify-content-between align-items-center w-100 me-3 flex-wrap gap-2">
+                            <span class="fw-semibold">@response.RespondentName</span>
+                            <span class="text-muted small">@response.RespondentEmail</span>
+                            <span class="badge bg-secondary">
+                                @response.SubmittedAt.ToLocalTime().ToString("g")
+                            </span>
+                        </div>
+                    </button>
+                </h2>
+
+                <div id="@collapseId"
+                     class="accordion-collapse collapse @(i == 0 ? "show" : string.Empty)"
+                     aria-labelledby="@headingId"
+                     data-bs-parent="#responsesAccordion">
+                    <div class="accordion-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 44px;">#</th>
+                                        <th>Question</th>
+                                        <th>Type</th>
+                                        <th>Answer</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var answer in response.Answers.OrderBy(answer => answer.QuestionOrderNumber))
+                                    {
+                                        <tr>
+                                            <td>@answer.QuestionOrderNumber</td>
+                                            <td>@answer.QuestionText</td>
+                                            <td><span class="badge bg-light text-dark">@answer.QuestionType</span></td>
+                                            <td>
+                                                @if (!string.IsNullOrWhiteSpace(answer.TextAnswer))
+                                                {
+                                                    <span>@answer.TextAnswer</span>
+                                                }
+                                                else if (answer.SelectedOptionTexts.Any())
+                                                {
+                                                    <span>@string.Join(", ", answer.SelectedOptionTexts)</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">No answer</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

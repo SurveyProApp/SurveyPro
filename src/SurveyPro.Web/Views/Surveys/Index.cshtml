@@ -47,10 +47,20 @@ else
 
                     @if (!string.IsNullOrWhiteSpace(survey.AccessCode))
                     {
-                        <a asp-controller="Participation" asp-action="Join" asp-route-code="@survey.AccessCode"
-                           class="btn btn-outline-primary btn-sm">
-                            Start survey
-                        </a>
+                        <div class="d-flex gap-2">
+                            <a asp-controller="Participation" asp-action="Join" asp-route-code="@survey.AccessCode"
+                               class="btn btn-outline-primary btn-sm">
+                                Start survey
+                            </a>
+
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <a asp-controller="Surveys" asp-action="Responses" asp-route-id="@survey.Id"
+                                   class="btn btn-outline-info btn-sm">
+                                    View responses
+                                </a>
+                            }
+                        </div>
                     }
                 </div>
             </div>

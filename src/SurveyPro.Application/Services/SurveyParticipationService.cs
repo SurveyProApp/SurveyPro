@@ -10,6 +10,7 @@ using SurveyPro.Application.Common;
 using SurveyPro.Application.DTOs.Participation;
 using SurveyPro.Application.Interfaces;
 using SurveyPro.Domain.Entities;
+using SurveyPro.Domain.Enums;
 using SurveyPro.Infrastructure.Persistence;
 
 /// <summary>
@@ -17,6 +18,8 @@ using SurveyPro.Infrastructure.Persistence;
 /// </summary>
 public sealed class SurveyParticipationService : ISurveyParticipationService
 {
+    private const string SurveyNotPublishedMessage = "This survey is being configured and is not available yet.";
+
     private readonly SurveyProDbContext dbContext;
     private readonly ILogger<SurveyParticipationService> logger;
 
@@ -51,6 +54,10 @@ public sealed class SurveyParticipationService : ISurveyParticipationService
         }
 
         var survey = session.Survey;
+        if (survey.Status != SurveyStatuses.Published)
+        {
+            return Result<SurveyParticipationDto>.Failure(SurveyNotPublishedMessage);
+        }
 
         var dto = new SurveyParticipationDto
         {
@@ -105,6 +112,11 @@ public sealed class SurveyParticipationService : ISurveyParticipationService
             return Result.Failure("Survey not found.");
         }
 
+        if (session.Survey.Status != SurveyStatuses.Published)
+        {
+            return Result.Failure(SurveyNotPublishedMessage);
+        }
+
         if (session.SurveyId != request.SurveyId)
         {
             return Result.Failure("Survey mismatch.");
@@ -138,6 +150,11 @@ public sealed class SurveyParticipationService : ISurveyParticipationService
         if (session == null)
         {
             return Result.Failure("Survey not found.");
+        }
+
+        if (session.Survey.Status != SurveyStatuses.Published)
+        {
+            return Result.Failure(SurveyNotPublishedMessage);
         }
 
         var participant = await this.dbContext.SessionParticipants
@@ -179,6 +196,11 @@ public sealed class SurveyParticipationService : ISurveyParticipationService
         if (session == null)
         {
             return Result.Failure("Survey not found.");
+        }
+
+        if (session.Survey.Status != SurveyStatuses.Published)
+        {
+            return Result.Failure(SurveyNotPublishedMessage);
         }
 
         if (session.SurveyId != surveyId)

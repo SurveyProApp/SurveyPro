@@ -20,6 +20,11 @@
            class="btn btn-outline-primary btn-sm">
             Open respondent link
         </a>
+
+        <a asp-controller="Surveys" asp-action="Responses" asp-route-id="@Model.Id"
+           class="btn btn-outline-info btn-sm">
+            View responses
+        </a>
     </div>
 }
 

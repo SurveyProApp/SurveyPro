@@ -206,6 +206,78 @@ public sealed class SurveyService : ISurveyService
         return Result.Success();
     }
 
+    public async Task<Result<SurveyResponsesDto>> GetSurveyResponsesAsync(
+        Guid surveyId,
+        Guid requestedByUserId,
+        bool isAdministrator,
+        CancellationToken cancellationToken)
+    {
+        if (surveyId == Guid.Empty)
+        {
+            return Result<SurveyResponsesDto>.Failure("Invalid survey id.");
+        }
+
+        if (requestedByUserId == Guid.Empty)
+        {
+            return Result<SurveyResponsesDto>.Failure("Invalid user id.");
+        }
+
+        if (this.dbContext == null)
+        {
+            return Result<SurveyResponsesDto>.Failure("Responses are unavailable in the current environment.");
+        }
+
+        var survey = await this.surveyRepository.GetByIdAsync(surveyId, cancellationToken);
+        if (survey == null)
+        {
+            return Result<SurveyResponsesDto>.Failure("Survey not found.");
+        }
+
+        if (!isAdministrator && survey.AuthorId != requestedByUserId)
+        {
+            return Result<SurveyResponsesDto>.Failure("Access denied.");
+        }
+
+        var submittedResponses = await this.dbContext.Responses
+            .AsNoTracking()
+            .Where(response => !response.IsDraft)
+            .Where(response => response.SessionParticipant.Session.SurveyId == surveyId)
+            .Include(response => response.SessionParticipant)
+                .ThenInclude(participant => participant.User)
+            .Include(response => response.Answers)
+                .ThenInclude(answer => answer.Question)
+            .Include(response => response.Answers)
+                .ThenInclude(answer => answer.Option)
+            .OrderByDescending(response => response.SubmittedAt ?? response.CreatedAt)
+            .ToListAsync(cancellationToken);
+
+        var accessCode = await this.GetAccessCodeAsync(surveyId, cancellationToken);
+
+        var dto = new SurveyResponsesDto
+        {
+            SurveyId = survey.Id,
+            SurveyTitle = survey.Title,
+            SurveyDescription = survey.Description,
+            AccessCode = accessCode,
+            TotalSubmittedResponses = submittedResponses.Count,
+            Responses = submittedResponses
+                .Select(response => new SurveyResponseDto
+                {
+                    ResponseId = response.Id,
+                    RespondentUserId = response.SessionParticipant.UserId,
+                    RespondentName = string.IsNullOrWhiteSpace(response.SessionParticipant.User.Name)
+                        ? (response.SessionParticipant.User.UserName ?? string.Empty)
+                        : response.SessionParticipant.User.Name,
+                    RespondentEmail = response.SessionParticipant.User.Email ?? string.Empty,
+                    SubmittedAt = response.SubmittedAt ?? response.CreatedAt,
+                    Answers = this.MapResponseAnswers(response.Answers),
+                })
+                .ToList(),
+        };
+
+        return Result<SurveyResponsesDto>.Success(dto);
+    }
+
     private async Task<IReadOnlyCollection<SurveyListItemDto>> MapToListAsync(
         IEnumerable<Survey> surveys,
         CancellationToken cancellationToken)
@@ -271,6 +343,34 @@ public sealed class SurveyService : ISurveyService
                     .OrderByDescending(session => session.CreatedAt)
                     .Select(session => session.AccessCode)
                     .FirstOrDefault() ?? string.Empty);
+    }
+
+    private IReadOnlyCollection<SurveyResponseAnswerDto> MapResponseAnswers(ICollection<ResponseAnswer> answers)
+    {
+        return answers
+            .GroupBy(answer => answer.QuestionId)
+            .OrderBy(group => group.First().Question.OrderNumber)
+            .Select(group => new SurveyResponseAnswerDto
+            {
+                QuestionId = group.Key,
+                QuestionOrderNumber = group.First().Question.OrderNumber,
+                QuestionText = group.First().Question.Text,
+                QuestionType = group.First().Question.Type,
+                TextAnswer = group
+                    .Select(answer => answer.TextAnswer)
+                    .FirstOrDefault(value => !string.IsNullOrWhiteSpace(value)),
+                SelectedOptionIds = group
+                    .Where(answer => answer.OptionId.HasValue)
+                    .Select(answer => answer.OptionId!.Value)
+                    .Distinct()
+                    .ToList(),
+                SelectedOptionTexts = group
+                    .Where(answer => !string.IsNullOrWhiteSpace(answer.Option?.Text))
+                    .Select(answer => answer.Option!.Text)
+                    .Distinct()
+                    .ToList(),
+            })
+            .ToList();
     }
 
     private async Task EnsureSurveySessionAsync(Survey survey, CancellationToken cancellationToken)
