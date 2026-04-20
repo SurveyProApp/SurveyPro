@@ -8,8 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using FluentAssertions;
-using SurveyPro.Web.Services;
-using SurveyPro.Web.ViewModels.Surveys;
+using SurveyPro.Infrastructure.Exporters;
 using Xunit;
 
 /// <summary>
@@ -17,31 +16,31 @@ using Xunit;
 /// </summary>
 public class SurveyCsvExporterTests
 {
-    private static SurveyResponsesViewModel MakeViewModel(int responseCount = 1)
+    private static SurveyResponsesExportModel MakeViewModel(int responseCount = 1)
     {
-        return new SurveyResponsesViewModel
+        return new SurveyResponsesExportModel
         {
             SurveyId = Guid.NewGuid(),
             SurveyTitle = "Test Survey",
             SurveyDescription = "Test Description",
             AccessCode = "ABCD1234",
             TotalSubmittedResponses = responseCount,
-            Responses = Enumerable.Range(0, responseCount).Select(i => new SurveyResponseViewModel
+            Responses = Enumerable.Range(0, responseCount).Select(i => new SurveyResponseExportModel
             {
                 ResponseId = Guid.NewGuid(),
                 RespondentName = $"User {i + 1}",
                 RespondentEmail = $"user{i + 1}@example.com",
                 SubmittedAt = DateTime.UtcNow.AddMinutes(-i),
-                Answers = new List<SurveyResponseAnswerViewModel>
+                Answers = new List<SurveyResponseAnswerExportModel>
                 {
-                    new SurveyResponseAnswerViewModel
+                    new SurveyResponseAnswerExportModel
                     {
                         QuestionOrderNumber = 1,
                         QuestionText = "How are you?",
                         QuestionType = "Text",
                         TextAnswer = $"Fine, user {i + 1}",
                     },
-                    new SurveyResponseAnswerViewModel
+                    new SurveyResponseAnswerExportModel
                     {
                         QuestionOrderNumber = 2,
                         QuestionText = "Pick a color",
@@ -145,19 +144,19 @@ public class SurveyCsvExporterTests
     [Fact]
     public void GenerateResponsesCsv_EmptyAnswerText_OutputContainsDash()
     {
-        var model = new SurveyResponsesViewModel
+        var model = new SurveyResponsesExportModel
         {
             SurveyTitle = "T",
-            Responses = new List<SurveyResponseViewModel>
+            Responses = new List<SurveyResponseExportModel>
             {
-                new SurveyResponseViewModel
+                new SurveyResponseExportModel
                 {
                     RespondentName = "Alice",
                     RespondentEmail = "alice@example.com",
                     SubmittedAt = DateTime.UtcNow,
-                    Answers = new List<SurveyResponseAnswerViewModel>
+                    Answers = new List<SurveyResponseAnswerExportModel>
                     {
-                        new SurveyResponseAnswerViewModel
+                        new SurveyResponseAnswerExportModel
                         {
                             QuestionOrderNumber = 1,
                             QuestionText = "Unanswered?",
@@ -177,19 +176,19 @@ public class SurveyCsvExporterTests
     [Fact]
     public void GenerateResponsesCsv_AnswerWithDoubleQuotes_SanitizesQuotes()
     {
-        var model = new SurveyResponsesViewModel
+        var model = new SurveyResponsesExportModel
         {
             SurveyTitle = "T",
-            Responses = new List<SurveyResponseViewModel>
+            Responses = new List<SurveyResponseExportModel>
             {
-                new SurveyResponseViewModel
+                new SurveyResponseExportModel
                 {
                     RespondentName = "Bob",
                     RespondentEmail = "bob@example.com",
                     SubmittedAt = DateTime.UtcNow,
-                    Answers = new List<SurveyResponseAnswerViewModel>
+                    Answers = new List<SurveyResponseAnswerExportModel>
                     {
-                        new SurveyResponseAnswerViewModel
+                        new SurveyResponseAnswerExportModel
                         {
                             QuestionOrderNumber = 1,
                             QuestionText = "Thoughts?",
@@ -211,10 +210,10 @@ public class SurveyCsvExporterTests
     public void GenerateResponsesCsv_EmptyResponseList_ReturnsEmptyContent()
     {
         // Arrange
-        var model = new SurveyResponsesViewModel
+        var model = new SurveyResponsesExportModel
         {
             SurveyTitle = "Empty",
-            Responses = new List<SurveyResponseViewModel>(),
+            Responses = new List<SurveyResponseExportModel>(),
         };
 
         var bytes = SurveyCsvExporter.GenerateResponsesCsv(model);
@@ -227,19 +226,19 @@ public class SurveyCsvExporterTests
     [Fact]
     public void GenerateResponsesCsv_MultipleOptions_JoinsWithCommaAndSpace()
     {
-        var model = new SurveyResponsesViewModel
+        var model = new SurveyResponsesExportModel
         {
             SurveyTitle = "T",
-            Responses = new List<SurveyResponseViewModel>
+            Responses = new List<SurveyResponseExportModel>
             {
-                new SurveyResponseViewModel
+                new SurveyResponseExportModel
                 {
                     RespondentName = "Carol",
                     RespondentEmail = "carol@example.com",
                     SubmittedAt = DateTime.UtcNow,
-                    Answers = new List<SurveyResponseAnswerViewModel>
+                    Answers = new List<SurveyResponseAnswerExportModel>
                     {
-                        new SurveyResponseAnswerViewModel
+                        new SurveyResponseAnswerExportModel
                         {
                             QuestionOrderNumber = 1,
                             QuestionText = "Pick all",

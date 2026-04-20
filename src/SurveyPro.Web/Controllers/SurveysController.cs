@@ -9,8 +9,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SurveyPro.Application.DTOs.Surveys;
 using SurveyPro.Application.Interfaces;
+using SurveyPro.Infrastructure.Exporters;
 using SurveyPro.Web.ViewModels.Surveys;
-using SurveyPro.Web.Services;
 
 /// <summary>
 /// Surveys user flows.
@@ -94,14 +94,14 @@ public class SurveysController : BaseController
             return this.RedirectToAction(nameof(this.Responses), new { id });
         }
 
-        var viewModel = this.MapToResponsesViewModel(result.Value!);
+        var exportModel = this.MapToExportModel(result.Value!);
 
-        var csvBytes = SurveyCsvExporter.GenerateResponsesCsv(viewModel);
+        var csvBytes = SurveyCsvExporter.GenerateResponsesCsv(exportModel);
 
         return File(
             csvBytes,
             "text/csv",
-            $"SurveyResults_{viewModel.SurveyTitle}_{DateTime.UtcNow:yyyyMMddHHmmss}.csv");
+            $"SurveyResults_{exportModel.SurveyTitle}_{DateTime.UtcNow:yyyyMMddHHmmss}.csv");
     }
 
     [Authorize(Roles = "Author")]
@@ -356,14 +356,14 @@ public class SurveysController : BaseController
             return this.RedirectToAction(nameof(this.Responses), new { id });
         }
 
-        var viewModel = this.MapToResponsesViewModel(result.Value!);
+        var exportModel = this.MapToExportModel(result.Value!);
 
-        var pdfBytes = SurveyPro.Web.Services.SurveyPdfExporter.GenerateResponsesPdf(viewModel);
+        var pdfBytes = SurveyPdfExporter.GenerateResponsesPdf(exportModel);
 
         return File(
             pdfBytes,
             "application/pdf",
-            $"SurveyResults_{viewModel.SurveyTitle}_{DateTime.UtcNow:yyyyMMddHHmmss}.pdf");
+            $"SurveyResults_{exportModel.SurveyTitle}_{DateTime.UtcNow:yyyyMMddHHmmss}.pdf");
     }
 
     private SurveyResponsesViewModel MapToResponsesViewModel(SurveyResponsesDto dto)
@@ -387,6 +387,42 @@ public class SurveysController : BaseController
                     Answers = response.Answers
                         .OrderBy(answer => answer.QuestionOrderNumber)
                         .Select(answer => new SurveyResponseAnswerViewModel
+                        {
+                            QuestionId = answer.QuestionId,
+                            QuestionOrderNumber = answer.QuestionOrderNumber,
+                            QuestionText = answer.QuestionText,
+                            QuestionType = answer.QuestionType,
+                            TextAnswer = answer.TextAnswer,
+                            SelectedOptionIds = answer.SelectedOptionIds.ToList(),
+                            SelectedOptionTexts = answer.SelectedOptionTexts.ToList(),
+                        })
+                        .ToList(),
+                })
+                .ToList(),
+        };
+    }
+
+    private SurveyResponsesExportModel MapToExportModel(SurveyResponsesDto dto)
+    {
+        return new SurveyResponsesExportModel
+        {
+            SurveyId = dto.SurveyId,
+            SurveyTitle = dto.SurveyTitle,
+            SurveyDescription = dto.SurveyDescription,
+            AccessCode = dto.AccessCode,
+            TotalSubmittedResponses = dto.TotalSubmittedResponses,
+            Responses = dto.Responses
+                .OrderByDescending(response => response.SubmittedAt)
+                .Select(response => new SurveyResponseExportModel
+                {
+                    ResponseId = response.ResponseId,
+                    RespondentUserId = response.RespondentUserId,
+                    RespondentName = response.RespondentName,
+                    RespondentEmail = response.RespondentEmail,
+                    SubmittedAt = response.SubmittedAt,
+                    Answers = response.Answers
+                        .OrderBy(answer => answer.QuestionOrderNumber)
+                        .Select(answer => new SurveyResponseAnswerExportModel
                         {
                             QuestionId = answer.QuestionId,
                             QuestionOrderNumber = answer.QuestionOrderNumber,

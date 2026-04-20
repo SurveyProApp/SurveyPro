@@ -8,8 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using FluentAssertions;
-using SurveyPro.Web.Services;
-using SurveyPro.Web.ViewModels.Surveys;
+using SurveyPro.Infrastructure.Exporters;
 using Xunit;
 
 
@@ -18,31 +17,31 @@ using Xunit;
 /// </summary>
 public class SurveyPdfExporterTests
 {
-    private static SurveyResponsesViewModel MakeViewModel(int responseCount = 1)
+    private static SurveyResponsesExportModel MakeViewModel(int responseCount = 1)
     {
-        return new SurveyResponsesViewModel
+        return new SurveyResponsesExportModel
         {
             SurveyId = Guid.NewGuid(),
             SurveyTitle = "Quarterly Review",
             SurveyDescription = "Q4 Review Survey",
             AccessCode = "XYZ123",
             TotalSubmittedResponses = responseCount,
-            Responses = Enumerable.Range(0, responseCount).Select(i => new SurveyResponseViewModel
+            Responses = Enumerable.Range(0, responseCount).Select(i => new SurveyResponseExportModel
             {
                 ResponseId = Guid.NewGuid(),
                 RespondentName = $"Respondent {i + 1}",
                 RespondentEmail = $"r{i + 1}@example.com",
                 SubmittedAt = DateTime.UtcNow.AddMinutes(-i),
-                Answers = new List<SurveyResponseAnswerViewModel>
+                Answers = new List<SurveyResponseAnswerExportModel>
                 {
-                    new SurveyResponseAnswerViewModel
+                    new SurveyResponseAnswerExportModel
                     {
                         QuestionOrderNumber = 1,
                         QuestionText = "Rate your experience",
                         QuestionType = "SingleChoice",
                         SelectedOptionTexts = new List<string> { "Excellent" },
                     },
-                    new SurveyResponseAnswerViewModel
+                    new SurveyResponseAnswerExportModel
                     {
                         QuestionOrderNumber = 2,
                         QuestionText = "Additional comments",
@@ -79,13 +78,13 @@ public class SurveyPdfExporterTests
     [Fact]
     public void GenerateResponsesPdf_WithNoResponses_ReturnsValidPdf()
     {
-        var model = new SurveyResponsesViewModel
+        var model = new SurveyResponsesExportModel
         {
             SurveyTitle = "Empty Survey",
             SurveyDescription = "No responses",
             AccessCode = "EMPTY1",
             TotalSubmittedResponses = 0,
-            Responses = new List<SurveyResponseViewModel>(),
+            Responses = new List<SurveyResponseExportModel>(),
         };
 
         var result = SurveyPdfExporter.GenerateResponsesPdf(model);
@@ -110,19 +109,19 @@ public class SurveyPdfExporterTests
     [Fact]
     public void GenerateResponsesPdf_WithTextAnswer_ReturnsValidPdf()
     {
-        var model = new SurveyResponsesViewModel
+        var model = new SurveyResponsesExportModel
         {
             SurveyTitle = "Text Survey",
-            Responses = new List<SurveyResponseViewModel>
+            Responses = new List<SurveyResponseExportModel>
             {
-                new SurveyResponseViewModel
+                new SurveyResponseExportModel
                 {
                     RespondentName = "Alice",
                     RespondentEmail = "alice@example.com",
                     SubmittedAt = DateTime.UtcNow,
-                    Answers = new List<SurveyResponseAnswerViewModel>
+                    Answers = new List<SurveyResponseAnswerExportModel>
                     {
-                        new SurveyResponseAnswerViewModel
+                        new SurveyResponseAnswerExportModel
                         {
                             QuestionOrderNumber = 1,
                             QuestionText = "Describe your experience",
@@ -142,19 +141,19 @@ public class SurveyPdfExporterTests
     [Fact]
     public void GenerateResponsesPdf_WithEmptyAnswer_ReturnsValidPdf()
     {
-        var model = new SurveyResponsesViewModel
+        var model = new SurveyResponsesExportModel
         {
             SurveyTitle = "Partial Survey",
-            Responses = new List<SurveyResponseViewModel>
+            Responses = new List<SurveyResponseExportModel>
             {
-                new SurveyResponseViewModel
+                new SurveyResponseExportModel
                 {
                     RespondentName = "Bob",
                     RespondentEmail = "bob@example.com",
                     SubmittedAt = DateTime.UtcNow,
-                    Answers = new List<SurveyResponseAnswerViewModel>
+                    Answers = new List<SurveyResponseAnswerExportModel>
                     {
-                        new SurveyResponseAnswerViewModel
+                        new SurveyResponseAnswerExportModel
                         {
                             QuestionOrderNumber = 1,
                             QuestionText = "Unanswered question",
@@ -174,11 +173,11 @@ public class SurveyPdfExporterTests
     [Fact]
     public void GenerateResponsesPdf_WithNullDescription_DoesNotThrow()
     {
-        var model = new SurveyResponsesViewModel
+        var model = new SurveyResponsesExportModel
         {
             SurveyTitle = "No Desc Survey",
             SurveyDescription = null,
-            Responses = new List<SurveyResponseViewModel>(),
+            Responses = new List<SurveyResponseExportModel>(),
         };
 
         var act = () => SurveyPdfExporter.GenerateResponsesPdf(model);
@@ -189,19 +188,19 @@ public class SurveyPdfExporterTests
     [Fact]
     public void GenerateResponsesPdf_WithMultipleChoiceAnswer_ReturnsValidPdf()
     {
-        var model = new SurveyResponsesViewModel
+        var model = new SurveyResponsesExportModel
         {
             SurveyTitle = "Choice Survey",
-            Responses = new List<SurveyResponseViewModel>
+            Responses = new List<SurveyResponseExportModel>
             {
-                new SurveyResponseViewModel
+                new SurveyResponseExportModel
                 {
                     RespondentName = "Carol",
                     RespondentEmail = "carol@example.com",
                     SubmittedAt = DateTime.UtcNow,
-                    Answers = new List<SurveyResponseAnswerViewModel>
+                    Answers = new List<SurveyResponseAnswerExportModel>
                     {
-                        new SurveyResponseAnswerViewModel
+                        new SurveyResponseAnswerExportModel
                         {
                             QuestionOrderNumber = 1,
                             QuestionText = "Select all that apply",
