@@ -275,4 +275,39 @@ public class AccountController : Controller
         ModelState.AddModelError(string.Empty, "Invalid login attempt");
         return View(model);
     }
+
+    /// <summary>
+    /// Shows the account deletion confirmation page.
+    /// </summary>
+    /// <returns>The delete account view.</returns>
+    [Authorize]
+    public IActionResult DeleteAccount() => View();
+
+    /// <summary>
+    /// Handles account deletion after confirmation.
+    /// </summary>
+    /// <returns>Redirects to home on success, or back to the delete page on failure.</returns>
+    [HttpPost]
+    [ActionName("DeleteAccount")]
+    [Authorize]
+    public async Task<IActionResult> DeleteAccountConfirmed()
+    {
+        var user = await this.userManager.GetUserAsync(User);
+        if (user is null)
+        {
+            return RedirectToAction("Login");
+        }
+
+        await this.signInManager.SignOutAsync();
+        var result = await this.userManager.DeleteAsync(user);
+
+        if (result.Succeeded)
+        {
+            this.logger.LogInformation("User {Email} deleted account", user.Email);
+            return RedirectToAction("Index", "Home");
+        }
+
+        TempData["ErrorMessage"] = "Failed to delete account.";
+        return RedirectToAction(nameof(DeleteAccount));
+    }
 }

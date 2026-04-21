@@ -54,10 +54,10 @@ public sealed class AdminUserService : IAdminUserService
             return cachedUsers;
         }
 
-        var users = await this.userManager.Users
+        var users = this.userManager.Users
             .AsNoTracking()
             .OrderByDescending(user => user.CreatedAt)
-            .ToListAsync(cancellationToken);
+            .ToList();
 
         var result = new List<AdminUserListItemDto>(users.Count);
 
