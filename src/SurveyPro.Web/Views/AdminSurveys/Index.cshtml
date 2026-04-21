@@ -111,18 +111,6 @@
 
                         <td>
                             <div class="d-flex gap-2 flex-wrap">
-
-                                @if (!string.IsNullOrWhiteSpace(survey.AccessCode))
-                                {
-                                    <a asp-controller="Surveys"
-                                       asp-action="Responses"
-                                       asp-route-id="@survey.Id"
-                                       class="btn btn-outline-info btn-sm">
-                                        Responses
-                                    </a>
-                                }
-
-                                <!-- DELETE BUTTON -->
                                 <button type="button"
                                         class="btn btn-danger btn-sm"
                                         data-bs-toggle="modal"
@@ -142,7 +130,6 @@
     </div>
 </section>
 
-<!-- MODAL -->
 <div class="modal fade" id="deleteModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -183,7 +170,6 @@
     </div>
 </div>
 
-<!-- SCRIPT -->
 <script>
 const deleteModal = document.getElementById('deleteModal');
 
