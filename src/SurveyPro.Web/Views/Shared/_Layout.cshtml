@@ -40,6 +40,13 @@
                                 <a class="nav-link" asp-controller="Surveys" asp-action="Create">Create survey</a>
                             </li>
                         }
+
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="AdminUsers" asp-action="Index">Users</a>
+                            </li>
+                        }
                     </ul>
 
                     <ul class="navbar-nav">

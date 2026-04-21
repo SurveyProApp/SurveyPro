@@ -9,11 +9,13 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using SurveyPro.Application.Interfaces;
 using SurveyPro.Application.Services;
+using SurveyPro.Application.Configuration;
 using SurveyPro.Domain.Entities;
 using SurveyPro.Infrastructure.Identity;
 using SurveyPro.Infrastructure.Interfaces;
 using SurveyPro.Infrastructure.Persistence;
 using SurveyPro.Infrastructure.Repositories;
+using SurveyPro.Web.Infrastructure.Middleware;
 using SurveyPro.Web.Infrastructure;
 using System.Threading.Tasks;
 
@@ -60,11 +62,14 @@ public class Program
 
         builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
         builder.Services.AddProblemDetails();
+        builder.Services.AddMemoryCache();
+        builder.Services.Configure<CacheSettings>(builder.Configuration.GetSection("Caching"));
         builder.Services.AddScoped<ISurveyRepository, SurveyRepository>();
         builder.Services.AddScoped<ISurveyService, SurveyService>();
         builder.Services.AddScoped<ISurveyParticipationService, SurveyParticipationService>();
         builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
         builder.Services.AddScoped<IQuestionService, QuestionService>();
+        builder.Services.AddScoped<IAdminUserService, AdminUserService>();
 
         var app = builder.Build();
 
@@ -90,6 +95,8 @@ public class Program
         app.UseRouting();
 
         app.UseAuthentication();
+        app.UseMiddleware<RequestExecutionTimeLoggingMiddleware>();
+        app.UseMiddleware<RequestInfoLoggingMiddleware>();
         app.UseAuthorization();
 
         app.MapControllerRoute(

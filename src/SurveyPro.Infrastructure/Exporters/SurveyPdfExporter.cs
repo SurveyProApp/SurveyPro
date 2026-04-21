@@ -92,7 +92,7 @@ public static class SurveyPdfExporter
                 return;
             }
 
-            if (answer.SelectedOptionTexts.Any())
+            if (answer.SelectedOptionTexts.Count != 0)
             {
                 answerColumn.Item().Text($"Selected: {string.Join(", ", answer.SelectedOptionTexts)}");
                 return;

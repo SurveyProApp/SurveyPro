@@ -1,0 +1,88 @@
+@model IReadOnlyCollection<SurveyPro.Application.DTOs.Users.AdminUserListItemDto>
+@{
+    ViewData["Title"] = "User Management";
+    var totalUsers = Model.Count;
+    var blockedUsers = Model.Count(user => user.IsBlocked);
+    var activeUsers = totalUsers - blockedUsers;
+}
+
+<section class="admin-users-hero mb-4">
+    <div class="admin-users-hero__overlay"></div>
+    <div class="admin-users-hero__content">
+        <h1 class="display-5 fw-bold mb-2">User Management</h1>
+        <p class="lead mb-4">Administrator dashboard for viewing registered users.</p>
+        <div class="row g-3">
+            <div class="col-sm-4">
+                <div class="admin-stat">
+                    <span class="admin-stat__label">Total users</span>
+                    <span class="admin-stat__value">@totalUsers</span>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="admin-stat">
+                    <span class="admin-stat__label">Active</span>
+                    <span class="admin-stat__value">@activeUsers</span>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="admin-stat">
+                    <span class="admin-stat__label">Blocked</span>
+                    <span class="admin-stat__value">@blockedUsers</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="card border-0 shadow-lg admin-users-card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped align-middle mb-0 admin-users-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Roles</th>
+                        <th>Status</th>
+                        <th>Registered (UTC)</th>
+                        <th>User Id</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@user.Name</td>
+                            <td>@user.Email</td>
+                            <td>
+                                @if (user.Roles.Count == 0)
+                                {
+                                    <span class="badge text-bg-secondary">No roles</span>
+                                }
+                                else
+                                {
+                                    foreach (var role in user.Roles)
+                                    {
+                                        <span class="badge text-bg-info me-1">@role</span>
+                                    }
+                                }
+                            </td>
+                            <td>
+                                @if (user.IsBlocked)
+                                {
+                                    <span class="badge text-bg-danger">Blocked</span>
+                                }
+                                else
+                                {
+                                    <span class="badge text-bg-success">Active</span>
+                                }
+                            </td>
+                            <td>@user.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td><code>@user.Id</code></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
