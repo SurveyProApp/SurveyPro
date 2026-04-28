@@ -112,4 +112,17 @@ public sealed class AdminSurveysController : Controller
 
         return this.View(result.Value!);
     }
+
+    [HttpPost]
+    public async Task<IActionResult> DeleteResponse(Guid participantId, Guid surveyId, CancellationToken ct)
+    {
+        var result = await this.adminSurveyService.DeleteParticipantResponseAsync(participantId, ct);
+
+        if (result.IsFailure)
+        {
+            return Content("ERROR: " + result.Error);
+        }
+
+        return RedirectToAction("Responses", new { id = surveyId });
+    }
 }

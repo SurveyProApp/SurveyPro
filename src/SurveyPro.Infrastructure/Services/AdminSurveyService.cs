@@ -212,4 +212,30 @@ public sealed class AdminSurveyService : IAdminSurveyService
             Participants = participants,
         });
     }
+
+    public async Task<Result> DeleteParticipantResponseAsync(Guid participantId, CancellationToken cancellationToken)
+    {
+        var participant = await this.dbContext.SessionParticipants
+            .Include(p => p.Responses)
+                .ThenInclude(r => r.Answers)
+            .FirstOrDefaultAsync(p => p.Id == participantId, cancellationToken);
+
+        if (participant == null)
+        {
+            return Result.Failure("Participant not found");
+        }
+
+        var responses = participant.Responses.ToList();
+
+        foreach (var response in responses)
+        {
+            this.dbContext.ResponseAnswers.RemoveRange(response.Answers);
+        }
+
+        this.dbContext.Responses.RemoveRange(responses);
+
+        await this.dbContext.SaveChangesAsync(cancellationToken);
+
+        return Result.Success();
+    }
 }

@@ -36,4 +36,6 @@ public interface IAdminSurveyService
     Task<Result<AdminSurveyQuestionsDto>> GetSurveyQuestionsAsync(Guid surveyId, CancellationToken cancellationToken);
 
     Task<Result<AdminSurveyResponsesDto>> GetSurveyResponsesAsync(Guid surveyId, CancellationToken cancellationToken);
+
+    Task<Result> DeleteParticipantResponseAsync(Guid participantId, CancellationToken cancellationToken);
 }
