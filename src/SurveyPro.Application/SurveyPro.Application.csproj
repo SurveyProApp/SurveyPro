@@ -10,7 +10,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SurveyPro.Domain\SurveyPro.Domain.csproj" />
-    <ProjectReference Include="..\SurveyPro.Infrastructure\SurveyPro.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -22,7 +21,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <NoWarn>$(NoWarn);SA0001;SA1101</NoWarn>
+    <NoWarn>$(NoWarn);SA0001;SA1101;S6966</NoWarn>
   </PropertyGroup>
 
 </Project>

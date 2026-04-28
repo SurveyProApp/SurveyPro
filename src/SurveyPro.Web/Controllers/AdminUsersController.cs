@@ -7,6 +7,7 @@ namespace SurveyPro.Web.Controllers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SurveyPro.Application.Interfaces;
+using SurveyPro.Web.Infrastructure.Filters;
 
 /// <summary>
 /// User management page for administrators.
@@ -36,6 +37,7 @@ public sealed class AdminUsersController : Controller
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Users list view.</returns>
+    [RateLimit(15)]
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
     {
         var users = await this.adminUserService.GetUsersAsync(cancellationToken);

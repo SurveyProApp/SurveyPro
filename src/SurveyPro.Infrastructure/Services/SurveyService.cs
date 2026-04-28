@@ -1,8 +1,8 @@
-﻿// <copyright file="SurveyService.cs" company="PlaceholderCompany">
+// <copyright file="SurveyService.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
-namespace SurveyPro.Application.Services;
+namespace SurveyPro.Infrastructure.Services;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;

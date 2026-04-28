@@ -2,7 +2,7 @@
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
-namespace SurveyPro.Application.Services;
+namespace SurveyPro.Infrastructure.Services;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -14,7 +14,7 @@ using SurveyPro.Domain.Enums;
 using SurveyPro.Infrastructure.Persistence;
 
 /// <summary>
-/// Respondent survey use-cases.
+/// Participation service implementation that uses DbContext for responses.
 /// </summary>
 public sealed class SurveyParticipationService : ISurveyParticipationService
 {

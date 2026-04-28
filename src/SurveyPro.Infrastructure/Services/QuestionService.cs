@@ -1,24 +1,20 @@
-﻿// <copyright file="QuestionService.cs" company="PlaceholderCompany">
+// <copyright file="QuestionService.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
-namespace SurveyPro.Application.Services;
+namespace SurveyPro.Infrastructure.Services;
 
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SurveyPro.Application.Common;
 using SurveyPro.Application.DTOs.Questions;
 using SurveyPro.Application.Interfaces;
 using SurveyPro.Domain.Entities;
 using SurveyPro.Infrastructure.Interfaces;
-using SurveyPro.Infrastructure.Persistence;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-public class QuestionService : IQuestionService
+/// <summary>
+/// Question use-case service.
+/// </summary>
+public sealed class QuestionService : IQuestionService
 {
     private readonly IQuestionRepository repository;
     private readonly ILogger<QuestionService> logger;
@@ -80,7 +76,7 @@ public class QuestionService : IQuestionService
             OrderNumber = order,
         };
 
-        await repository.AddAsync(question, cancellationToken);
+        await this.repository.AddAsync(question, cancellationToken);
 
         if (request.Options != null && request.Options.Any())
         {
@@ -91,12 +87,12 @@ public class QuestionService : IQuestionService
                 Text = o,
             });
 
-            await repository.AddOptionsAsync(options, cancellationToken);
+            await this.repository.AddOptionsAsync(options, cancellationToken);
         }
 
-        await repository.SaveChangesAsync(cancellationToken);
+        await this.repository.SaveChangesAsync(cancellationToken);
 
-        logger.LogInformation("Question {QuestionId} created", question.Id);
+        this.logger.LogInformation("Question {QuestionId} created", question.Id);
 
         return question.Id;
     }
@@ -112,14 +108,14 @@ public class QuestionService : IQuestionService
             return "Question text is required";
         }
 
-        var question = await repository.GetByIdAsync(questionId, cancellationToken);
+        var question = await this.repository.GetByIdAsync(questionId, cancellationToken);
 
         if (question == null)
         {
             return "Question not found";
         }
 
-        var survey = await repository.GetSurveyByIdAsync(question.SurveyId, cancellationToken);
+        var survey = await this.repository.GetSurveyByIdAsync(question.SurveyId, cancellationToken);
 
         if (survey == null)
         {
@@ -145,7 +141,7 @@ public class QuestionService : IQuestionService
         question.Text = request.Text.Trim();
         question.Type = request.Type;
 
-        await repository.RemoveOptionsAsync(questionId, cancellationToken);
+        await this.repository.RemoveOptionsAsync(questionId, cancellationToken);
 
         if (request.Options != null && request.Options.Any())
         {
@@ -156,19 +152,19 @@ public class QuestionService : IQuestionService
                 Text = o,
             });
 
-            await repository.AddOptionsAsync(options, cancellationToken);
+            await this.repository.AddOptionsAsync(options, cancellationToken);
         }
 
-        await repository.SaveChangesAsync(cancellationToken);
+        await this.repository.SaveChangesAsync(cancellationToken);
 
-        logger.LogInformation("Question {QuestionId} updated", question.Id);
+        this.logger.LogInformation("Question {QuestionId} updated", question.Id);
 
         return Result.Success();
     }
 
     public async Task<List<QuestionDto>> GetBySurveyIdAsync(Guid surveyId, CancellationToken cancellationToken)
     {
-        var questions = await repository.GetQuestionsBySurveyIdAsync(surveyId, cancellationToken);
+        var questions = await this.repository.GetQuestionsBySurveyIdAsync(surveyId, cancellationToken);
 
         return questions.Select(q => new QuestionDto
         {
@@ -182,7 +178,7 @@ public class QuestionService : IQuestionService
 
     public async Task<Result<QuestionDto>> GetByIdAsync(Guid questionId, CancellationToken cancellationToken)
     {
-        var question = await repository.GetByIdAsync(questionId, cancellationToken);
+        var question = await this.repository.GetByIdAsync(questionId, cancellationToken);
 
         if (question == null)
         {
@@ -201,7 +197,7 @@ public class QuestionService : IQuestionService
 
     public async Task<Result> DeleteAsync(Guid questionId, CancellationToken cancellationToken)
     {
-        var question = await repository.GetByIdAsync(questionId, cancellationToken);
+        var question = await this.repository.GetByIdAsync(questionId, cancellationToken);
 
         if (question == null)
         {
@@ -210,27 +206,22 @@ public class QuestionService : IQuestionService
 
         var surveyId = question.SurveyId;
 
-        repository.Remove(question);
-        await repository.SaveChangesAsync(cancellationToken);
+        this.repository.Remove(question);
+        await this.repository.SaveChangesAsync(cancellationToken);
 
-        var questions = await repository.GetQuestionsBySurveyIdAsync(surveyId, cancellationToken);
+        var questions = await this.repository.GetQuestionsBySurveyIdAsync(surveyId, cancellationToken);
 
         var ordered = questions
             .OrderBy(q => q.OrderNumber)
             .ToList();
 
-        for (int i = 0; i < ordered.Count; i++)
+        for (var i = 0; i < ordered.Count; i++)
         {
             ordered[i].OrderNumber = i + 1;
         }
 
-        await repository.SaveChangesAsync(cancellationToken);
+        await this.repository.SaveChangesAsync(cancellationToken);
 
         return Result.Success();
-    }
-
-    public void Remove(Question question)
-    {
-        throw new NotImplementedException();
     }
 }

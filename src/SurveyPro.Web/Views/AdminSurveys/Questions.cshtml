@@ -1,0 +1,146 @@
+@model SurveyPro.Application.DTOs.Surveys.AdminSurveyQuestionsDto
+@using SurveyPro.Domain.Enums
+@{
+    ViewData["Title"] = "Survey Questions";
+    var totalQuestions = Model.Questions.Count;
+    var totalOptions = Model.Questions.Sum(question => question.Options?.Count ?? 0);
+}
+
+<section class="admin-users-hero mb-4">
+    <div class="admin-users-hero__overlay"></div>
+    <div class="admin-users-hero__content">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+            <div>
+                <h1 class="display-5 fw-bold mb-2">@Model.Title</h1>
+                <p class="lead mb-0">Read-only survey question overview for administrators.</p>
+            </div>
+            <div class="text-end">
+                <div class="small text-uppercase opacity-75">Status</div>
+                @if (Model.Status == SurveyStatuses.Published)
+                {
+                    <span class="badge text-bg-success fs-6">Published</span>
+                }
+                else
+                {
+                    <span class="badge text-bg-secondary fs-6">Draft</span>
+                }
+            </div>
+        </div>
+
+        <div class="row g-3 mt-2">
+            <div class="col-sm-3">
+                <div class="admin-stat">
+                    <span class="admin-stat__label">Questions</span>
+                    <span class="admin-stat__value">@totalQuestions</span>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="admin-stat">
+                    <span class="admin-stat__label">Options</span>
+                    <span class="admin-stat__value">@totalOptions</span>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="admin-stat">
+                    <span class="admin-stat__label">Visibility</span>
+                    <span class="admin-stat__value">@(Model.IsPublic ? "Public" : "Private")</span>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="admin-stat">
+                    <span class="admin-stat__label">Access code</span>
+                    <span class="admin-stat__value">@(string.IsNullOrWhiteSpace(Model.AccessCode) ? "—" : Model.AccessCode)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-uppercase text-muted small mb-2">Author</div>
+                <div class="fw-semibold">@Model.AuthorName</div>
+                <div class="text-muted">@Model.AuthorEmail</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-uppercase text-muted small mb-2">Created</div>
+                <div class="fw-semibold">@Model.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</div>
+                @if (!string.IsNullOrWhiteSpace(Model.Description))
+                {
+                    <div class="mt-2 text-muted">@Model.Description</div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="card border-0 shadow-lg admin-users-card">
+    <div class="card-body">
+        @if (!Model.Questions.Any())
+        {
+            <div class="alert alert-info mb-0">This survey has no questions yet.</div>
+        }
+        else
+        {
+            <div class="accordion" id="adminQuestionsAccordion">
+                @for (var i = 0; i < Model.Questions.Count; i++)
+                {
+                    var question = Model.Questions.ElementAt(i);
+                    var headingId = $"admin-q-heading-{i}";
+                    var collapseId = $"admin-q-collapse-{i}";
+
+                    <div class="accordion-item mb-2 border rounded-3 overflow-hidden">
+                        <h2 class="accordion-header" id="@headingId">
+                            <button class="accordion-button @(i == 0 ? string.Empty : "collapsed")"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#@collapseId"
+                                    aria-expanded="@(i == 0 ? "true" : "false")"
+                                    aria-controls="@collapseId">
+                                <div class="d-flex justify-content-between align-items-center w-100 me-3 flex-wrap gap-2">
+                                    <span class="fw-semibold">@question.OrderNumber. @question.Text</span>
+                                    <span class="badge text-bg-light text-dark">@question.Type</span>
+                                </div>
+                            </button>
+                        </h2>
+
+                        <div id="@collapseId"
+                             class="accordion-collapse collapse @(i == 0 ? "show" : string.Empty)"
+                             aria-labelledby="@headingId"
+                             data-bs-parent="#adminQuestionsAccordion">
+                            <div class="accordion-body">
+                                @if (string.Equals(question.Type, "Text", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <div class="text-muted fst-italic">Open text question.</div>
+                                }
+                                else if (question.Options is { Count: > 0 })
+                                {
+                                    <div class="d-flex flex-wrap gap-2">
+                                        @foreach (var option in question.Options)
+                                        {
+                                            <span class="badge text-bg-info">@option</span>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="text-muted">No options configured.</div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</section>
+
+<div class="mt-3 d-flex gap-2 flex-wrap">
+    <a asp-action="Index" class="btn btn-outline-secondary">Back to surveys</a>
+</div>

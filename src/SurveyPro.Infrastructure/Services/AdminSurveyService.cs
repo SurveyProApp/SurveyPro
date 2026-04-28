@@ -2,14 +2,16 @@
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
-namespace SurveyPro.Application.Services;
+namespace SurveyPro.Infrastructure.Services;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using SurveyPro.Application.DTOs.Questions;
 using SurveyPro.Application.DTOs.Surveys;
 using SurveyPro.Application.Interfaces;
 using SurveyPro.Infrastructure.Persistence;
 using SurveyPro.Domain.Enums;
+using SurveyPro.Application.Common;
 
 /// <summary>
 /// Admin survey use-cases: view all surveys and delete any survey.
@@ -91,5 +93,54 @@ public sealed class AdminSurveyService : IAdminSurveyService
         this.logger.LogInformation("Admin deleted survey {SurveyId} titled '{Title}'", surveyId, survey.Title);
 
         return true;
+    }
+
+    /// <inheritdoc/>
+    public async Task<Result<AdminSurveyQuestionsDto>> GetSurveyQuestionsAsync(Guid surveyId, CancellationToken cancellationToken)
+    {
+        var survey = await this.dbContext.Surveys
+            .AsNoTracking()
+            .Include(s => s.Author)
+            .Include(s => s.Questions)
+                .ThenInclude(q => q.Options)
+            .Include(s => s.Sessions)
+            .FirstOrDefaultAsync(s => s.Id == surveyId, cancellationToken);
+
+        if (survey == null)
+        {
+            return Result<AdminSurveyQuestionsDto>.Failure("Survey not found.");
+        }
+
+        return Result<AdminSurveyQuestionsDto>.Success(new AdminSurveyQuestionsDto
+        {
+            SurveyId = survey.Id,
+            Title = survey.Title,
+            Description = survey.Description,
+            Status = survey.Status,
+            IsPublic = survey.IsPublic,
+            CreatedAt = survey.CreatedAt,
+            AccessCode = survey.Sessions
+                .Where(session => session.IsActive)
+                .OrderByDescending(session => session.CreatedAt)
+                .Select(session => session.AccessCode)
+                .FirstOrDefault() ?? string.Empty,
+            AuthorName = survey.Author?.Name ?? string.Empty,
+            AuthorEmail = survey.Author?.Email ?? string.Empty,
+            Questions = survey.Questions
+                .OrderBy(question => question.OrderNumber)
+                .Select(question => new QuestionDto
+                {
+                    Id = question.Id,
+                    SurveyId = question.SurveyId,
+                    Text = question.Text,
+                    Type = question.Type,
+                    OrderNumber = question.OrderNumber,
+                    Options = question.Options
+                        .OrderBy(option => option.Text)
+                        .Select(option => option.Text)
+                        .ToList(),
+                })
+                .ToList(),
+        });
     }
 }

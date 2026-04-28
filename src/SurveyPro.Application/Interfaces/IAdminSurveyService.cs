@@ -4,6 +4,7 @@
 
 namespace SurveyPro.Application.Interfaces;
 
+using SurveyPro.Application.Common;
 using SurveyPro.Application.DTOs.Surveys;
 
 /// <summary>
@@ -25,4 +26,12 @@ public interface IAdminSurveyService
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Result of deletion.</returns>
     Task<bool> DeleteSurveyAsync(Guid surveyId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Returns survey questions for admin read-only view.
+    /// </summary>
+    /// <param name="surveyId">Survey identifier.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Survey question payload.</returns>
+    Task<Result<AdminSurveyQuestionsDto>> GetSurveyQuestionsAsync(Guid surveyId, CancellationToken cancellationToken);
 }

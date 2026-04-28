@@ -6,25 +6,38 @@ namespace SurveyPro.Web.Controllers
 {
     using System.Diagnostics;
     using Microsoft.AspNetCore.Mvc;
-    using Microsoft.Extensions.Logging;
+    using SurveyPro.Application.Interfaces;
+    using SurveyPro.Web.Infrastructure.Filters;
     using SurveyPro.Web.ViewModels;
 
     public class HomeController : Controller
     {
+        private readonly IQuoteService quoteService;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="HomeController"/> class.
         /// </summary>
-        public HomeController()
+        /// <param name="quoteService">Quote service.</param>
+        public HomeController(IQuoteService quoteService)
         {
+            this.quoteService = quoteService;
         }
 
-        public IActionResult Index()
+        [RateLimit(15)]
+        public async Task<IActionResult> Index(CancellationToken cancellationToken)
         {
-            return View();
+            var quote = await this.quoteService.GetQuoteAsync(cancellationToken);
+            return View(new HomeViewModel { Quote = quote });
         }
 
         public IActionResult Privacy()
         {
+            return View();
+        }
+
+        public IActionResult RateLimitExceeded(int retryAfterSeconds = 60)
+        {
+            ViewBag.RetryAfterSeconds = retryAfterSeconds;
             return View();
         }
 

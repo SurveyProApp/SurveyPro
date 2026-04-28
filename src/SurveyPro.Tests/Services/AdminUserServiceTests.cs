@@ -16,7 +16,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using SurveyPro.Application.Configuration;
-using SurveyPro.Application.Services;
+using SurveyPro.Infrastructure.Services;
 using SurveyPro.Domain.Entities;
 using Xunit;
 

@@ -7,14 +7,14 @@ namespace SurveyPro.Web;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using SurveyPro.Application.Interfaces;
-using SurveyPro.Application.Services;
 using SurveyPro.Application.Configuration;
+using SurveyPro.Application.Interfaces;
 using SurveyPro.Domain.Entities;
 using SurveyPro.Infrastructure.Identity;
 using SurveyPro.Infrastructure.Interfaces;
 using SurveyPro.Infrastructure.Persistence;
 using SurveyPro.Infrastructure.Repositories;
+using SurveyPro.Infrastructure.Services;
 using SurveyPro.Web.Infrastructure.Middleware;
 using SurveyPro.Web.Infrastructure;
 using System.Threading.Tasks;
@@ -71,6 +71,12 @@ public class Program
         builder.Services.AddScoped<IQuestionService, QuestionService>();
         builder.Services.AddScoped<IAdminUserService, AdminUserService>();
         builder.Services.AddScoped<IAdminSurveyService, AdminSurveyService>();
+        builder.Services.AddHttpClient<SurveyPro.Application.Interfaces.IQuoteService, SurveyPro.Infrastructure.ExternalApis.QuoteService>(client =>
+        {
+            client.BaseAddress = new Uri(
+                builder.Configuration["ExternalApis:QuoteApiBaseUrl"] ?? "https://api.quotable.io");
+            client.Timeout = TimeSpan.FromSeconds(5);
+        });
 
         var app = builder.Build();
 

@@ -12,7 +12,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using SurveyPro.Application.DTOs.Surveys;
-using SurveyPro.Application.Services;
+using SurveyPro.Infrastructure.Services;
 using SurveyPro.Domain.Entities;
 using SurveyPro.Domain.Enums;
 using SurveyPro.Infrastructure.Interfaces;

@@ -1,8 +1,80 @@
-﻿@{
+﻿@model SurveyPro.Web.ViewModels.HomeViewModel
+@{
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<section class="admin-users-hero mb-4">
+    <div class="admin-users-hero__overlay"></div>
+    <div class="admin-users-hero__content">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-7">
+                <h1 class="display-5 fw-bold mb-3">SurveyPro</h1>
+                <p class="lead mb-0">
+                    Create surveys, collect responses and review data from a clean admin workspace.
+                </p>
+            </div>
+            <div class="col-lg-5">
+                <div class="admin-stat">
+                    <span class="admin-stat__label">Quote of the day</span>
+                    @if (Model.Quote is not null)
+                    {
+                        <span class="admin-stat__value" style="font-size: 1.1rem; line-height: 1.5; color: #f8fbff;">“@Model.Quote.Content”</span>
+                        <span class="mt-2 text-end small opacity-75">— @Model.Quote.Author</span>
+                    }
+                    else
+                    {
+                        <span class="admin-stat__value" style="font-size: 1.1rem; line-height: 1.5; color: #f8fbff;">Build better surveys with a reliable workflow.</span>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body p-4">
+                <h2 class="h4 mb-3">What you can do here</h2>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded-3 h-100">
+                            <div class="fw-semibold mb-2">Build surveys</div>
+                            <div class="text-muted">Create structured questionnaires with text and choice questions.</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded-3 h-100">
+                            <div class="fw-semibold mb-2">Track results</div>
+                            <div class="text-muted">Review responses as a readable list or export them to PDF and CSV.</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded-3 h-100">
+                            <div class="fw-semibold mb-2">Admin panel</div>
+                            <div class="text-muted">Browse users and surveys from one central admin workspace.</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded-3 h-100">
+                            <div class="fw-semibold mb-2">Public access</div>
+                            <div class="text-muted">Share surveys with access codes and collect answers quickly.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body p-4">
+                <h2 class="h5 mb-3">Quick links</h2>
+                <div class="d-grid gap-2">
+                    <a asp-controller="Surveys" asp-action="Index" class="btn btn-primary">Browse surveys</a>
+                    <a asp-controller="Account" asp-action="Register" class="btn btn-outline-secondary">Create account</a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

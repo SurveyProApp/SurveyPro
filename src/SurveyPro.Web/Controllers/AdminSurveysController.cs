@@ -7,6 +7,7 @@ namespace SurveyPro.Web.Controllers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SurveyPro.Application.Interfaces;
+using SurveyPro.Web.Infrastructure.Filters;
 
 /// <summary>
 /// Admin controller for managing all surveys regardless of visibility.
@@ -35,6 +36,7 @@ public sealed class AdminSurveysController : Controller
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>All surveys view.</returns>
+    [RateLimit(15)]
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
     {
         var surveys = await this.adminSurveyService.GetAllSurveysAsync(cancellationToken);
@@ -68,5 +70,26 @@ public sealed class AdminSurveysController : Controller
         }
 
         return this.RedirectToAction(nameof(this.Index));
+    }
+
+    /// <summary>
+    /// Shows a read-only list of survey questions for the selected survey.
+    /// </summary>
+    /// <param name="id">Survey identifier.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Survey questions view.</returns>
+    [RateLimit(15)]
+    [HttpGet]
+    public async Task<IActionResult> Questions(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await this.adminSurveyService.GetSurveyQuestionsAsync(id, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            TempData["ErrorMessage"] = result.Error;
+            return this.RedirectToAction(nameof(this.Index));
+        }
+
+        return this.View(result.Value!);
     }
 }
