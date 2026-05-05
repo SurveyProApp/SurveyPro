@@ -4,6 +4,10 @@
     ViewData["Title"] = "Survey Responses";
 }
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/surveys/responses.css" asp-append-version="true" />
+}
+
 <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
     <div>
         <h1 class="mb-1">@Model.SurveyTitle</h1>
@@ -108,7 +112,7 @@ else
                             <table class="table table-sm table-hover align-middle mb-0">
                                 <thead>
                                     <tr>
-                                        <th style="width: 44px;">#</th>
+                                        <th class="survey-responses-question-order">#</th>
                                         <th>Question</th>
                                         <th>Type</th>
                                         <th>Answer</th>
@@ -149,8 +153,6 @@ else
 
 @if (Model.Responses.Any())
 {
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-
     var questionGroups = Model.Responses
         .SelectMany(r => r.Answers)
         .GroupBy(a => new { a.QuestionId, a.QuestionText, a.QuestionType, a.QuestionOrderNumber })
@@ -172,14 +174,13 @@ else
         @foreach (var group in questionGroups)
         {
             <div class="col-md-6">
-                <div class="card border-0 shadow-sm h-100 bg-light bg-opacity-25"
-                     style="background: linear-gradient(135deg, rgba(91, 141, 239, 0.3), rgba(91, 141, 239, 0.15));"
+                <div class="card border-0 shadow-sm h-100 bg-light bg-opacity-25 survey-responses-chart-card"
                      data-question-id="@group.Key.QuestionId" data-question-type="@group.Key.QuestionType">
                     <div class="card-body">
-                        <h6 class="mb-1" style="font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: white;">
+                        <h6 class="mb-1 survey-responses-chart-label">
                             QUESTION @group.Key.QuestionOrderNumber
                         </h6>
-                        <p class="fw-semibold mb-3" style="font-size: 15px; color: white;">@group.Key.QuestionText</p>
+                        <p class="fw-semibold mb-3 survey-responses-chart-question">@group.Key.QuestionText</p>
 
                         @{
                             var optionCounts = group
@@ -190,7 +191,6 @@ else
                             .OrderByDescending(x => x.Count)
                             .ToList();
 
-                            var total = optionCounts.Sum(x => x.Count);
                             var chartId = $"chart_{group.Key.QuestionId:N}";
 
                             var palette = new[]
@@ -210,166 +210,37 @@ else
 
                         @if (group.Key.QuestionType == "Text")
                         {
-                            <div class="d-flex align-items-center justify-content-center text-light"
-                                 style="height: 180px; border: 1.5px dashed #ffffff; border-radius: 8px; flex-direction: column; gap: 8px;">
+                            <div class="d-flex align-items-center justify-content-center text-light survey-responses-chart-empty survey-responses-chart-empty-dashed">
                                 <span>Charts cannot be built for text answers</span>
                             </div>
                         }
                         else if (!optionCounts.Any())
                         {
-                            <div class="d-flex align-items-center justify-content-center text-light"
-                                 style="height: 180px;">
+                            <div class="d-flex align-items-center justify-content-center text-light survey-responses-chart-empty">
                                 No answers yet
                             </div>
                         }
                         else
                         {
-                            <div style="position: relative; width: 100%; height: 260px;">
-                                <canvas id="@chartId" class="question-chart"></canvas>
+                            <div class="survey-responses-chart-wrapper">
+                                <canvas id="@chartId"
+                                        class="question-chart"
+                                        data-labels="@labelsJson"
+                                        data-counts="@countsJson"
+                                        data-colors="@colorsJson"></canvas>
                             </div>
-
-                            <script>
-                                (function () {
-                                    // Store chart data globally
-                                    window.chartData = window.chartData || {};
-                                    window.chartInstances = window.chartInstances || {};
-                                    
-                                    window.chartData['@chartId'] = {
-                                        labels: @Html.Raw(labelsJson),
-                                        counts: @Html.Raw(countsJson),
-                                        colors: @Html.Raw(colorsJson)
-                                    };
-                                    
-                                    window.chartInstances['@chartId'] = null;
-
-                                    // Render pie chart on initial load
-                                    setTimeout(function() {
-                                        renderPieChart('@chartId');
-                                    }, 0);
-                                })();
-                            </script>
                         }
                     </div>
                 </div>
             </div>
         }
     </div>
+}
 
-    <script>
-        // Initialize global objects
-        window.chartInstances = window.chartInstances || {};
-        window.chartData = window.chartData || {};
-
-        // Handle chart type toggle
-        document.querySelectorAll('input[name="chartType"]').forEach(radio => {
-            radio.addEventListener('change', function () {
-                const chartType = this.value;
-                document.querySelectorAll('.question-chart').forEach(canvas => {
-                    const chartId = canvas.id;
-                    
-                    // Destroy existing chart
-                    if (window.chartInstances[chartId]) {
-                        window.chartInstances[chartId].destroy();
-                        window.chartInstances[chartId] = null;
-                    }
-
-                    if (chartType === 'chart') {
-                        renderPieChart(chartId);
-                    } else {
-                        renderHistogram(chartId);
-                    }
-                });
-            });
-        });
-
-        function renderPieChart(chartId) {
-            const canvas = document.getElementById(chartId);
-            if (!canvas || !window.chartData[chartId]) return;
-
-            const data = window.chartData[chartId];
-            const ctx = canvas.getContext('2d');
-            
-            window.chartInstances[chartId] = new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: data.labels,
-                    datasets: [{
-                        data: data.counts,
-                        backgroundColor: data.colors
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            displayColors: false,
-                            callbacks: {
-                                label: function (context) {
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = ((context.parsed / total) * 100).toFixed(1);
-                                    return 'Count: ' + context.parsed + ' (' + percentage + '%)';
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        function renderHistogram(chartId) {
-            const canvas = document.getElementById(chartId);
-            if (!canvas || !window.chartData[chartId]) return;
-
-            const data = window.chartData[chartId];
-            const ctx = canvas.getContext('2d');
-            
-            window.chartInstances[chartId] = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: data.labels,
-                    datasets: [{
-                        label: 'Responses',
-                        data: data.counts,
-                        backgroundColor: data.colors,
-                        borderColor: data.colors,
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            displayColors: false,
-                            callbacks: {
-                                label: function (context) {
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = ((context.parsed.x / total) * 100).toFixed(1);
-                                    return 'Count: ' + context.parsed.x + ' (' + percentage + '%)';
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            beginAtZero: true,
-                            ticks: { 
-                                color: '#fff',
-                                stepSize: 1
-                            },
-                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
-                        },
-                        y: {
-                            ticks: { color: '#fff' },
-                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
-                        }
-                    }
-                }
-            });
-        }
-    </script>
+@section Scripts {
+    @if (Model.Responses.Any())
+    {
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+        <script src="~/js/surveys/responses.js" asp-append-version="true"></script>
+    }
 }

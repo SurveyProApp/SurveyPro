@@ -1,0 +1,40 @@
+.survey-responses-question-order {
+  width: 44px;
+}
+
+.survey-responses-chart-card {
+  background: linear-gradient(
+    135deg,
+    rgba(91, 141, 239, 0.3),
+    rgba(91, 141, 239, 0.15)
+  );
+}
+
+.survey-responses-chart-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #ffffff;
+}
+
+.survey-responses-chart-question {
+  font-size: 15px;
+  color: #ffffff;
+}
+
+.survey-responses-chart-empty {
+  height: 180px;
+}
+
+.survey-responses-chart-empty-dashed {
+  border: 1.5px dashed #ffffff;
+  border-radius: 8px;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.survey-responses-chart-wrapper {
+  position: relative;
+  width: 100%;
+  height: 260px;
+}

@@ -64,14 +64,13 @@
                                 <form asp-action="DeleteResponse"
                                       asp-controller="AdminSurveys"
                                       method="post"
-                                      class="m-0">
+                                      class="m-0 js-delete-response-form">
                         
                                     <input type="hidden" name="participantId" value="@participant.ParticipantId" />
                                     <input type="hidden" name="surveyId" value="@Model.SurveyId" />
                         
                                     <button type="submit"
-                                            class="btn btn-sm btn-danger px-3"
-                                            onclick="return confirm('Delete this response?');">
+                                            class="btn btn-sm btn-danger px-3">
                                         Delete
                                     </button>
                                 </form>
@@ -94,9 +93,9 @@
                                         <table class="table table-sm align-middle mb-0">
                                             <thead>
                                                 <tr>
-                                                    <th style="width: 45%;">Question</th>
-                                                    <th style="width: 15%;">Type</th>
-                                                    <th style="width: 40%;">Answer</th>
+                                                    <th>Question</th>
+                                                    <th>Type</th>
+                                                    <th>Answer</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -129,3 +128,7 @@
         Back to surveys
     </a>
 </div>
+
+@section Scripts {
+    <script src="~/js/admin-survey-responses.js" asp-append-version="true"></script>
+}

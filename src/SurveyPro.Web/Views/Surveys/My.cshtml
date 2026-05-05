@@ -58,11 +58,11 @@ else
                     <td>@survey.CreatedAt.ToLocalTime().ToString("g")</td>
 
                     <td>
-                        <div style="display:flex; gap:8px; align-items:center;">
+                        <div class="d-flex gap-2 align-items-center">
                     
                             @if (survey.Status != SurveyStatuses.Published)
                             {
-                                <form asp-action="Publish" method="post" style="display:inline;">
+                                <form asp-action="Publish" method="post" class="d-inline">
                                     <input type="hidden" name="id" value="@survey.Id" />
                                     <button type="submit" class="btn btn-success btn-sm">
                                         Publish
@@ -92,7 +92,7 @@ else
 
 
                             <!-- DELETE -->
-                            <form asp-action="Delete" method="post" style="display:inline;">
+                            <form asp-action="Delete" method="post" class="d-inline">
                                 <input type="hidden" name="id" value="@survey.Id" />
                                 <button type="submit" class="btn btn-danger btn-sm">
                                     Delete

@@ -91,6 +91,7 @@ public class Program
         });
 
         var app = builder.Build();
+        app.UseDeveloperExceptionPage();
 
         using (var scope = app.Services.CreateScope())
         {

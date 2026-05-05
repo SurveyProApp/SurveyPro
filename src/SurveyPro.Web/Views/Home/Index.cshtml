@@ -18,12 +18,14 @@
                     <span class="admin-stat__label">Quote of the day</span>
                     @if (Model.Quote is not null)
                     {
-                        <span class="admin-stat__value" style="font-size: 1.1rem; line-height: 1.5; color: #f8fbff;">“@Model.Quote.Content”</span>
+                        <span class="admin-stat__value quote-text">“@Model.Quote.Content”</span>
                         <span class="mt-2 text-end small opacity-75">— @Model.Quote.Author</span>
                     }
                     else
                     {
-                        <span class="admin-stat__value" style="font-size: 1.1rem; line-height: 1.5; color: #f8fbff;">Build better surveys with a reliable workflow.</span>
+                        <span class="admin-stat__value quote-text">
+                            Build better surveys with a reliable workflow.
+                        </span>
                     }
                 </div>
             </div>
