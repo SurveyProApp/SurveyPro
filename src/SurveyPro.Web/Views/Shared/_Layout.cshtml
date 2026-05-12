@@ -6,7 +6,6 @@
     <title>@ViewData["Title"] - SurveyPro.Web</title>
     
     <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
     <link href="https://cdn.jsdelivr.net/npm/bootswatch@5/dist/quartz/bootstrap.min.css" rel="stylesheet">
     
     @RenderSection("Styles", required: false)
@@ -135,9 +134,9 @@
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="~/js/site.min.js" asp-append-version="true"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js" 
-            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     
     @await RenderSectionAsync("Scripts", required: false)
 </body>
