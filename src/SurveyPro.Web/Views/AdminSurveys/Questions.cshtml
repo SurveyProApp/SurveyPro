@@ -22,7 +22,7 @@
                 }
                 else
                 {
-                    <span class="badge text-bg-secondary fs-6">Draft</span>
+                    <span class="badge text-bg-secondary fs-6">Draft</span> 
                 }
             </div>
         </div>
@@ -105,26 +105,25 @@
                                     aria-controls="@collapseId">
                                 <div class="d-flex justify-content-between align-items-center w-100 me-3 flex-wrap gap-2">
                                     <span class="fw-semibold">@question.OrderNumber. @question.Text</span>
-                                    <span class="badge text-bg-light text-dark">@question.Type</span>
+                                    @* Прибрано text-dark, щоб спрацював колір з CSS *@
+                                    <span class="badge text-bg-light">@question.Type</span> 
                                 </div>
                             </button>
                         </h2>
 
-                        <div id="@collapseId"
-                             class="accordion-collapse collapse @(i == 0 ? "show" : string.Empty)"
-                             aria-labelledby="@headingId"
-                             data-bs-parent="#adminQuestionsAccordion">
+                        <div id="@collapseId" class="accordion-collapse collapse @(i == 0 ? "show" : string.Empty)" 
+                            [cite_start]aria-labelledby="@headingId" data-bs-parent="#adminQuestionsAccordion">
                             <div class="accordion-body">
                                 @if (string.Equals(question.Type, "Text", StringComparison.OrdinalIgnoreCase))
                                 {
-                                    <div class="text-muted fst-italic">Open text question.</div>
+                                    <div class="text-muted fst-italic">Open text question.</div> 
                                 }
                                 else if (question.Options is { Count: > 0 })
                                 {
                                     <div class="d-flex flex-wrap gap-2">
                                         @foreach (var option in question.Options)
                                         {
-                                            <span class="badge text-bg-info">@option</span>
+                                            <span class="badge text-bg-light">@option</span> 
                                         }
                                     </div>
                                 }

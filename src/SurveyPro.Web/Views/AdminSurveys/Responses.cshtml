@@ -3,6 +3,10 @@
     ViewData["Title"] = "Survey Responses";
 }
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+}
+
 <section class="admin-users-hero mb-4">
     <div class="admin-users-hero__overlay"></div>
     <div class="admin-users-hero__content">
@@ -36,45 +40,33 @@
 
                     <div class="accordion-item mb-2 border rounded-3 overflow-hidden">
                         <h2 class="accordion-header d-flex align-items-center justify-content-between">
-                        
-                            <!-- ЛІВА ЧАСТИНА (клік для відкриття) -->
+
                             <button class="accordion-button flex-grow-1"
                                     type="button"
                                     data-bs-toggle="collapse"
                                     data-bs-target="#@collapseId"
                                     aria-expanded="@(i == 0 ? "true" : "false")">
-                        
-                                <span class="fw-semibold fs-5 text-white">
-                                    @participant.ParticipantName
-                                </span>
 
-                                
-
+                                <span class="fw-semibold fs-5">@participant.ParticipantName</span>
 
                                 <span class="badge bg-light text-dark px-2 py-1 ms-3">
                                     @participant.SubmittedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
                                 </span>
-
                             </button>
-                        
-                            <!-- ПРАВА ЧАСТИНА -->
+
                             <div class="d-flex align-items-center gap-3 ms-3 pe-3">
-                        
-                        
                                 <form asp-action="DeleteResponse"
                                       asp-controller="AdminSurveys"
                                       method="post"
                                       class="m-0 js-delete-response-form">
-                        
+
                                     <input type="hidden" name="participantId" value="@participant.ParticipantId" />
                                     <input type="hidden" name="surveyId" value="@Model.SurveyId" />
-                        
-                                    <button type="submit"
-                                            class="btn btn-sm btn-danger px-3">
+
+                                    <button type="submit" class="btn btn-sm btn-danger px-3">
                                         Delete
                                     </button>
                                 </form>
-                        
                             </div>
                         </h2>
 
@@ -90,12 +82,12 @@
                                 else
                                 {
                                     <div class="table-responsive">
-                                        <table class="table app-table table-sm align-middle mb-0" style="border-color: rgba(255, 255, 255, 0.15);">
-                                            <thead style="background: #0a1428 !important;">
+                                        <table class="table app-table table-sm align-middle mb-0">
+                                            <thead>
                                                 <tr>
-                                                    <th style="color: #ffffff; font-weight: 700; background: #0a1428 !important; padding: 1rem; border: none;">Question</th>
-                                                    <th style="color: #ffffff; font-weight: 700; background: #0a1428 !important; padding: 1rem; border: none;">Type</th>
-                                                    <th style="color: #ffffff; font-weight: 700; background: #0a1428 !important; padding: 1rem; border: none;">Answer</th>
+                                                    <th>Question</th>
+                                                    <th>Type</th>
+                                                    <th>Answer</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
