@@ -1,0 +1,90 @@
+
+/* --- Accordion -------------------------------------------- */
+.accordion-item {
+    border: 1px solid rgba(233, 30, 99, 0.2) !important;
+    border-radius: 0.75rem !important;
+    overflow: hidden;
+}
+
+.accordion-button {
+    font-weight: 500;
+    background-color: #fce4ec;
+    color: #880e4f !important;
+}
+
+/* collapsed: бейдж і дата видимі на світлому фоні */
+.accordion-button.collapsed .text-muted {
+    color: #880e4f !important;
+    opacity: 0.7;
+}
+
+.accordion-button.collapsed .badge {
+    background-color: rgba(136, 14, 79, 0.15) !important;
+    color: #880e4f !important;
+    border: 1px solid rgba(136, 14, 79, 0.25);
+}
+
+/* expanded: бейдж і дата видимі на рожевому фоні */
+.accordion-button:not(.collapsed) {
+    background-color: #db497a;
+    color: #fff !important;
+    box-shadow: none;
+}
+
+.accordion-button:not(.collapsed)::after {
+    filter: brightness(0) invert(1);
+}
+
+.accordion-button:focus {
+    box-shadow: 0 0 0 0.2rem rgba(233, 30, 99, 0.25);
+}
+
+/* --- Table header — transparent --------------------------- */
+.app-table thead tr {
+    background: transparent !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.app-table thead th {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6c757d !important;
+    font-weight: 600;
+    padding: 0.75rem 1rem;
+    border: none;
+    background: transparent !important;
+}
+
+.app-table tbody td {
+    padding: 0.75rem 1rem;
+    vertical-align: middle;
+    border-color: rgba(0, 0, 0, 0.06);
+}
+
+.app-table tbody tr:hover {
+    background-color: rgba(233, 30, 99, 0.04);
+}
+
+/* --- Type badge (всі варіанти Bootstrap-класів) ----------- */
+.badge.text-bg-secondary,
+.badge.text-bg-light,
+.badge.bg-light,
+.badge.bg-secondary {
+    background-color: #f3e5f5 !important;
+    color: #9a1b69 !important;
+    font-weight: 500;
+    border: 1px solid rgba(106, 27, 154, 0.2);
+}
+
+/* --- Delete button ---------------------------------------- */
+.btn-danger {
+    background-color: #ff6f00;
+    border-color: #ff6f00;
+    color: #fff;
+}
+
+.btn-danger:hover {
+    background-color: #e65100;
+    border-color: #e65100;
+}

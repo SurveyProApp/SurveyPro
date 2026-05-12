@@ -25,7 +25,6 @@
                class="btn btn-danger">
                 Export to PDF
             </a>
-
             <a asp-action="ExportResponsesCsv"
                asp-route-id="@Model.SurveyId"
                class="btn btn-success">
@@ -52,7 +51,6 @@
             </div>
         </div>
     </div>
-
     <div class="col-md-6">
         <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
@@ -85,7 +83,7 @@ else
             var headingId = $"response-heading-{i}";
             var collapseId = $"response-collapse-{i}";
 
-            <div class="accordion-item mb-2 border rounded-3 overflow-hidden">
+            <div class="accordion-item mb-2 rounded-3 overflow-hidden">
                 <h2 class="accordion-header" id="@headingId">
                     <button class="accordion-button @(i == 0 ? string.Empty : "collapsed")"
                             type="button"
@@ -109,13 +107,13 @@ else
                      data-bs-parent="#responsesAccordion">
                     <div class="accordion-body">
                         <div class="table-responsive">
-                            <table class="table app-table table-sm table-hover align-middle mb-0" style="border-color: rgba(255, 255, 255, 0.15);">
-                                <thead style="background: #0a1428 !important;">
+                            <table class="table app-table table-sm table-hover align-middle mb-0">
+                                <thead>
                                     <tr>
-                                        <th class="survey-responses-question-order" style="color: #ffffff; font-weight: 700; background: #0a1428 !important; padding: 1rem; border: none;">#</th>
-                                        <th style="color: #ffffff; font-weight: 700; background: #0a1428 !important; padding: 1rem; border: none;">Question</th>
-                                        <th style="color: #ffffff; font-weight: 700; background: #0a1428 !important; padding: 1rem; border: none;">Type</th>
-                                        <th style="color: #ffffff; font-weight: 700; background: #0a1428 !important; padding: 1rem; border: none;">Answer</th>
+                                        <th class="survey-responses-question-order">#</th>
+                                        <th>Question</th>
+                                        <th>Type</th>
+                                        <th>Answer</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -177,46 +175,46 @@ else
                 <div class="card border-0 shadow-sm h-100 bg-light bg-opacity-25 survey-responses-chart-card"
                      data-question-id="@group.Key.QuestionId" data-question-type="@group.Key.QuestionType">
                     <div class="card-body">
-                        <h6 class="mb-1 survey-responses-chart-label">
+                        <h6 class="survey-responses-chart-label">
                             QUESTION @group.Key.QuestionOrderNumber
                         </h6>
                         <p class="fw-semibold mb-3 survey-responses-chart-question">@group.Key.QuestionText</p>
 
                         @{
                             var optionCounts = group
-                            .Where(a => a.SelectedOptionTexts.Any())
-                            .SelectMany(a => a.SelectedOptionTexts)
-                            .GroupBy(t => t)
-                            .Select(g => new { Label = g.Key, Count = g.Count() })
-                            .OrderByDescending(x => x.Count)
-                            .ToList();
+                                .Where(a => a.SelectedOptionTexts.Any())
+                                .SelectMany(a => a.SelectedOptionTexts)
+                                .GroupBy(t => t)
+                                .Select(g => new { Label = g.Key, Count = g.Count() })
+                                .OrderByDescending(x => x.Count)
+                                .ToList();
 
                             var chartId = $"chart_{group.Key.QuestionId:N}";
 
                             var palette = new[]
                             {
-                "#9585de", "#de8eae", "#f4845f", "#a78bfa",
-                "#dea78e", "#add64d", "#f87171", "#60a5fa",
-                "#ec4899", "#fb923c", "#8b5cf6", "#10b981"
-                };
+                                "#9585de", "#de8eae", "#f4845f", "#a78bfa",
+                                "#dea78e", "#add64d", "#f87171", "#60a5fa",
+                                "#ec4899", "#fb923c", "#8b5cf6", "#10b981"
+                            };
 
                             var labelsJson = System.Text.Json.JsonSerializer.Serialize(
-                            optionCounts.Select(x => x.Label).ToArray());
+                                optionCounts.Select(x => x.Label).ToArray());
                             var countsJson = System.Text.Json.JsonSerializer.Serialize(
-                            optionCounts.Select(x => x.Count).ToArray());
+                                optionCounts.Select(x => x.Count).ToArray());
                             var colorsJson = System.Text.Json.JsonSerializer.Serialize(
-                            optionCounts.Select((_, i) => palette[i % palette.Length]).ToArray());
+                                optionCounts.Select((_, i) => palette[i % palette.Length]).ToArray());
                         }
 
                         @if (group.Key.QuestionType == "Text")
                         {
-                            <div class="d-flex align-items-center justify-content-center text-light survey-responses-chart-empty survey-responses-chart-empty-dashed">
+                            <div class="survey-responses-chart-empty survey-responses-chart-empty-dashed">
                                 <span>Charts cannot be built for text answers</span>
                             </div>
                         }
                         else if (!optionCounts.Any())
                         {
-                            <div class="d-flex align-items-center justify-content-center text-light survey-responses-chart-empty">
+                            <div class="survey-responses-chart-empty">
                                 No answers yet
                             </div>
                         }
